@@ -1,69 +1,142 @@
-import Image from "next/image";
+import Link from "next/link";
+import { Mic, Upload, ArrowRight, Clock, Shield, FileText } from "lucide-react";
+import { Navbar } from "@/components/layout/navbar";
 
-export default function Home() {
+export default function HomePage() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
+    <>
+      <Navbar />
+      <main className="flex-1">
+        {/* Hero */}
+        <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
+          <div className="mx-auto max-w-3xl text-center">
+            <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
+              Хурлаа бичиж,{" "}
+              <span className="text-primary">AI-р хурлын бичиг</span> үүсгээрэй
+            </h1>
+            <p className="mt-6 text-lg leading-8 text-muted-foreground">
+              Монгол хэлний хурлын AI туслах. Хурлаа бичиж, автомат хурлын
+              бичиг, шийдвэр, үүрэг даалгавар үүсгээрэй.
+            </p>
+
+            <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+              <Link
+                href="/meetings/new/live"
+                className="inline-flex h-12 items-center gap-2 rounded-xl bg-primary px-8 text-base font-semibold text-primary-foreground shadow-lg transition-all hover:bg-primary/90 hover:shadow-xl"
+              >
+                <Mic className="h-5 w-5" />
+                Шууд хурал бичих
+              </Link>
+              <Link
+                href="/upload"
+                className="inline-flex h-12 items-center gap-2 rounded-xl border border-border bg-card px-8 text-base font-semibold text-foreground shadow-sm transition-all hover:bg-accent"
+              >
+                <Upload className="h-5 w-5" />
+                Аудио файл оруулах
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* Steps */}
+        <section className="border-t border-border bg-muted/30 py-16 sm:py-20">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <h2 className="text-center text-2xl font-bold sm:text-3xl">
+              Хэрхэн ажилладаг вэ?
+            </h2>
+            <div className="mt-12 grid gap-8 sm:grid-cols-3">
+              <StepCard
+                step={1}
+                icon={<Mic className="h-6 w-6" />}
+                title="Хурлаа бичнэ"
+                description="Микрофоноо ашиглан хурлаа шууд бичнэ. Браузер дээр ажиллана."
+              />
+              <StepCard
+                step={2}
+                icon={<FileText className="h-6 w-6" />}
+                title="AI боловсруулна"
+                description="AI автоматаар хурлын бичиг, шийдвэр, үүрэг даалгавар үүсгэнэ."
+              />
+              <StepCard
+                step={3}
+                icon={<ArrowRight className="h-6 w-6" />}
+                title="Татаж авна"
+                description="Хурлын бичгийг засварлаж, DOCX форматаар татаж авна."
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* Features */}
+        <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <FeatureCard
+              icon={<Mic className="h-5 w-5 text-primary" />}
+              title="Шууд бичлэг"
+              description="Браузер дээр шууд микрофон бичлэг. Хурлын явцад бичвэр харна."
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+            <FeatureCard
+              icon={<Shield className="h-5 w-5 text-primary" />}
+              title="Хувийн байдлын хамгаалалт"
+              description="Таны бичлэг болон бичвэр зөвхөн танд хадгалагдана."
+            />
+            <FeatureCard
+              icon={<Clock className="h-5 w-5 text-primary" />}
+              title="Цаг хэмнэнэ"
+              description="Хурлын бичиг автоматаар үүсч, цаг хугацаа хэмнэнэ."
+            />
+          </div>
+        </section>
       </main>
+
+      <footer className="border-t border-border py-8">
+        <div className="mx-auto max-w-7xl px-4 text-center text-sm text-muted-foreground sm:px-6 lg:px-8">
+          © 2026 Mongolian AI Minutes. Hackathon MVP.
+        </div>
+      </footer>
+    </>
+  );
+}
+
+function StepCard({
+  step,
+  icon,
+  title,
+  description,
+}: {
+  step: number;
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="relative rounded-2xl border border-border bg-card p-6 text-center shadow-sm">
+      <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+        {icon}
+      </div>
+      <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-3 py-0.5 text-xs font-bold text-primary-foreground">
+        {step}
+      </div>
+      <h3 className="text-lg font-semibold">{title}</h3>
+      <p className="mt-2 text-sm text-muted-foreground">{description}</p>
+    </div>
+  );
+}
+
+function FeatureCard({
+  icon,
+  title,
+  description,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="rounded-xl border border-border bg-card p-5 shadow-sm transition-shadow hover:shadow-md">
+      <div className="mb-3">{icon}</div>
+      <h3 className="font-semibold">{title}</h3>
+      <p className="mt-1 text-sm text-muted-foreground">{description}</p>
     </div>
   );
 }
