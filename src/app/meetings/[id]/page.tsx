@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { AuthGuard } from "@/components/layout/auth-guard";
 import MeetingDetailContent from "./content";
 
 export default function MeetingDetailPage() {
@@ -10,7 +11,9 @@ export default function MeetingDetailPage() {
         </div>
       }
     >
-      <MeetingDetailContent />
+      <AuthGuard>
+        <MeetingDetailContent />
+      </AuthGuard>
     </Suspense>
   );
 }

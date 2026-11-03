@@ -7,22 +7,35 @@ import { Mic, Clock, Calendar, Trash2, FileText, Download } from "lucide-react";
 import { Navbar } from "@/components/layout/navbar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { api } from "@/lib/api";
+import { api, friendlyError } from "@/lib/api";
+import { AuthGuard } from "@/components/layout/auth-guard";
 import { formatDate, formatDuration } from "@/lib/audio-utils";
 import type { Meeting } from "@/lib/types";
 
-export default function DashboardPage() {
+function DashboardContent() {
   const router = useRouter();
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     api
       .listMeetings()
       .then((res) => setMeetings(res.meetings))
-      .catch(() => {})
+      .catch((err) => setLoadError(friendlyError(err)))
       .finally(() => setLoading(false));
   }, []);
+
+  // Боловсруулж буй хурал байвал төлөвийг 5 секунд тутам шинэчилнэ
+  const anyProcessing = meetings.some((m) => m.status === "processing");
+  useEffect(() => {
+    if (!anyProcessing) return;
+    const t = setInterval(() => {
+      api.listMeetings().then((res) => setMeetings(res.meetings)).catch(() => {});
+    }, 5000);
+    return () => clearInterval(t);
+  }, [anyProcessing]);
 
   const handleDelete = async (id: string) => {
     if (!confirm("Энэ хурлыг устгах уу?")) return;
@@ -68,6 +81,8 @@ export default function DashboardPage() {
               </Card>
             ))}
           </div>
+        ) : loadError ? (
+          <div className="mt-8 rounded-lg bg-destructive/10 p-4 text-sm text-destructive">{loadError}</div>
         ) : meetings.length === 0 ? (
           <EmptyState onCreateNew={handleNewMeeting} />
         ) : (
@@ -183,5 +198,13 @@ function EmptyState({ onCreateNew }: { onCreateNew: () => void }) {
         Шинэ хурал эхлүүлэх
       </Button>
     </div>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <AuthGuard>
+      <DashboardContent />
+    </AuthGuard>
   );
 }

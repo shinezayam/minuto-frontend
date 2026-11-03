@@ -16,21 +16,34 @@ export interface Meeting {
   duration_ms: number;
   created_at: string;
   updated_at: string;
+  /** queued → transcribing → summarizing → done | failed */
+  processing_stage: "queued" | "transcribing" | "summarizing" | "done" | "failed" | null;
+  processing_done: number;
+  processing_total: number;
+  /** "CODE: тайлбар" */
+  processing_error: string | null;
 }
 
 export interface MeetingListResponse {
   meetings: Meeting[];
 }
 
+/** Backend-ийн бичвэрийн хэсэг */
 export interface TranscriptSegment {
   id: string;
-  meeting_id: string;
   start_ms: number;
   end_ms: number;
-  raw_text: string;
-  edited_text: string | null;
-  status: "provisional" | "final";
-  sequence: number;
+  text: string;
+  speaker?: string | null;
+}
+
+export interface MeetingMinutes {
+  title: string;
+  summary: string;
+  topics: Array<{ title: string; description: string; source_segment_ids?: string[] }>;
+  decisions: Array<{ text: string; rationale?: string | null; source_segment_ids?: string[] }>;
+  action_items: Array<{ task: string; owner?: string | null; due_date?: string | null; source_segment_ids?: string[] }>;
+  open_questions?: Array<{ text: string; source_segment_ids?: string[] }>;
 }
 
 export type WSMessageType =

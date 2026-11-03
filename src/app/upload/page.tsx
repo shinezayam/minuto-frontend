@@ -8,9 +8,20 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { AudioLoadingAnimation } from "@/components/ui/audio-loading-animation";
-import { API_BASE, api, friendlyError } from "@/lib/api";
+import { api, friendlyError } from "@/lib/api";
+import { AuthGuard } from "@/components/layout/auth-guard";
+
+const AUDIO_EXT = /\.(mp3|m4a|wav|ogg|opus|webm|flac|aac|mp4)$/i;
 
 export default function UploadPage() {
+  return (
+    <AuthGuard>
+      <UploadContent />
+    </AuthGuard>
+  );
+}
+
+function UploadContent() {
   const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [title, setTitle] = useState("");
@@ -20,7 +31,7 @@ export default function UploadPage() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files?.[0];
     if (selected) {
-      if (!selected.type.startsWith("audio/")) {
+      if (!selected.type.startsWith("audio/") && !AUDIO_EXT.test(selected.name)) {
         setError("Зөвхөн аудио файл оруулна уу");
         return;
       }
@@ -42,27 +53,13 @@ export default function UploadPage() {
       // Create meeting
       const meeting = await api.createMeeting(title || "Аудио бичлэг");
 
-      // Upload audio file
-      const formData = new FormData();
-      formData.append("file", file);
+      await api.uploadAudio(meeting.id, file);
 
-      const res = await fetch(`${API_BASE}/api/meetings/${meeting.id}/upload`, {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!res.ok) {
-        const errorText = await res.text();
-        console.error("Upload failed:", res.status, errorText);
-        throw new Error(`Upload failed: ${res.status} - ${errorText}`);
-      }
-
-      // Бичлэгийг текст болгож, хурлын бичиг үүсгэнэ
+      // Боловсруулалт ард нь явна — хурлын хуудас явцыг харуулна
       try {
         await api.processMeeting(meeting.id);
         router.push(`/meetings/${meeting.id}`);
       } catch (err) {
-        // Файл хадгалагдсан тул дэлгэрэнгүй хуудсанд алдааг харуулж, бичвэр байвал үзүүлнэ
         router.push(`/meetings/${meeting.id}?error=${encodeURIComponent(friendlyError(err))}`);
       }
     } catch (err) {
