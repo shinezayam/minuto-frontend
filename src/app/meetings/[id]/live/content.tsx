@@ -20,7 +20,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAudioCapture } from "@/hooks/use-audio-capture";
 import { useWebSocket } from "@/hooks/use-websocket";
-import { api } from "@/lib/api";
+import { api, friendlyError } from "@/lib/api";
 import { formatDuration } from "@/lib/audio-utils";
 import type { AudioChunkData, Meeting } from "@/lib/types";
 
@@ -33,9 +33,13 @@ export default function LiveMeetingContent() {
   const [consent, setConsent] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [chunksSent, setChunksSent] = useState(0);
+  // Дуусгах товч дарсны дараах үе шат: илгээж дуусгах → бичвэр болгох
+  const [finishing, setFinishing] = useState<null | "uploading" | "processing">(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
   const wsRef = useRef<ReturnType<typeof useWebSocket> | null>(null);
   const mimeTypeRef = useRef("");
+  // "new" хуудаснаас үүсгэсэн хурлын ID (URL-ийг replaceState-ээр солих тул params шинэчлэгдэхгүй байж болно)
+  const activeMeetingIdRef = useRef<string | null>(null);
 
   const handleChunk = useCallback(
     (chunk: AudioChunkData) => {
@@ -55,13 +59,24 @@ export default function LiveMeetingContent() {
     mimeTypeRef.current = audio.mimeType;
   });
 
-  const chunksAcked = ws.lastAck !== null ? ws.lastAck + 1 : 0;
+  const chunksAcked = ws.ackedCount;
 
   useEffect(() => {
-    if (meetingId && meetingId !== "new") {
+    if (meetingId && meetingId !== "new" && !activeMeetingIdRef.current) {
       api.getMeeting(meetingId).then(setMeeting).catch(() => {});
     }
   }, [meetingId]);
+
+  // Бичиж байх үед хуудсыг санамсаргүй хаахаас сэргийлнэ
+  useEffect(() => {
+    const active = audio.status === "recording" || audio.status === "paused" || finishing !== null;
+    if (!active) return;
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [audio.status, finishing]);
 
   useEffect(() => {
     if (audio.status === "recording") {
@@ -79,49 +94,66 @@ export default function LiveMeetingContent() {
   const handleStart = async () => {
     if (!consent) return;
 
-    let currentMeetingId = meetingId;
+    let currentMeetingId = activeMeetingIdRef.current ?? meetingId;
     if (currentMeetingId === "new") {
       const newMeeting = await api.createMeeting();
       currentMeetingId = newMeeting.id;
       setMeeting(newMeeting);
-      router.replace(`/meetings/${currentMeetingId}/live`);
+      // router.replace() нь хуудсыг дахин mount хийж WebSocket, микрофоныг хаадаг тул
+      // URL-ийг л солино (Next.js native history API-г дэмждэг)
+      window.history.replaceState(null, "", `/meetings/${currentMeetingId}/live`);
     }
+    activeMeetingIdRef.current = currentMeetingId;
 
     await api.startMeeting(currentMeetingId);
     ws.connect(currentMeetingId);
     await audio.startCapture();
   };
 
+  const currentId = () => activeMeetingIdRef.current ?? meeting?.id ?? null;
+
   const handlePause = async () => {
-    if (meeting) await api.pauseMeeting(meeting.id);
+    const id = currentId();
+    if (id) await api.pauseMeeting(id);
     audio.pauseCapture();
   };
 
   const handleResume = async () => {
-    if (meeting) await api.resumeMeeting(meeting.id);
+    const id = currentId();
+    if (id) await api.resumeMeeting(id);
     audio.resumeCapture();
   };
 
   const handleStop = async () => {
-    audio.stopCapture();
+    const id = currentId();
+    setFinishing("uploading");
+
+    // 1. Сүүлийн хэсгийг гаргаж дуустал хүлээнэ
+    await audio.stopCapture();
+    // 2. Бүх хэсэг сервер дээр баталгаажтал хүлээнэ
+    const allDelivered = await ws.flush(30000);
     ws.disconnect();
 
-    if (meeting) {
-      await api.endMeeting(meeting.id);
-
-      // Process the recorded audio
-      const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
-      try {
-        await fetch(`${API_BASE}/api/meetings/${meeting.id}/process`, {
-          method: "POST",
-        });
-      } catch (err) {
-        console.error("Processing failed:", err);
-      }
-
-      // Redirect to meeting detail page to see results
-      router.push(`/meetings/${meeting.id}`);
+    if (!id) {
+      setFinishing(null);
+      return;
     }
+
+    let query = "";
+    try {
+      await api.endMeeting(id);
+      if (!allDelivered) {
+        query = `?error=${encodeURIComponent("Бичлэгийн зарим хэсэг сервер рүү хүрсэнгүй. Бичвэр дутуу байж болно.")}`;
+      }
+      // 3. Бичлэгийг текст болгож, хурлын бичиг үүсгэнэ. Алдааг нуулгүй дэлгэрэнгүй хуудсанд харуулна.
+      setFinishing("processing");
+      await api.processMeeting(id);
+    } catch (err) {
+      console.error("Processing failed:", err);
+      query = `?error=${encodeURIComponent(friendlyError(err))}`;
+    }
+
+    router.push(`/meetings/${id}${query}`);
   };
 
   if (!consent) {
@@ -234,10 +266,17 @@ export default function LiveMeetingContent() {
             <h3 className="mb-3 text-sm font-semibold text-muted-foreground">
               Бичвэр
             </h3>
-            {audio.status === "recording" || audio.status === "paused" ? (
+            {finishing ? (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Бичлэг хийгдэж байна... (ASR Phase 2-д нэмэгдэнэ)
+                {finishing === "uploading"
+                  ? `Бичлэгийг сервер рүү илгээж дуусгаж байна... (${ws.pendingCount} хэсэг үлдсэн)`
+                  : "Яриаг текст болгож, хурлын бичиг үүсгэж байна. Урт бичлэгт хэдэн минут болно..."}
+              </div>
+            ) : audio.status === "recording" || audio.status === "paused" ? (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Бичлэг хийгдэж байна. Бичвэр хурал дууссаны дараа гарна.
               </div>
             ) : (
               <p className="text-sm text-muted-foreground">
@@ -270,7 +309,7 @@ export default function LiveMeetingContent() {
 
         {/* Controls */}
         <div className="flex items-center justify-center gap-3">
-          {audio.status === "idle" || audio.status === "stopped" ? (
+          {finishing ? null : audio.status === "idle" || audio.status === "stopped" ? (
             <Button
               size="lg"
               className="gap-2 bg-red-600 text-white hover:bg-red-700"
@@ -289,7 +328,7 @@ export default function LiveMeetingContent() {
                   onClick={handlePause}
                 >
                   <Pause className="h-5 w-5" />
-                  Зогсоох
+                  Түр зогсоох
                 </Button>
               ) : audio.status === "paused" ? (
                 <Button

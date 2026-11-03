@@ -1,6 +1,27 @@
 import type { Meeting, MeetingListResponse } from "./types";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+/** Backend-ийн хаяг. Production build-д NEXT_PUBLIC_API_BASE_URL заавал тохируулна. */
+export const API_BASE = (process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000").replace(/\/$/, "");
+
+export class ApiError extends Error {
+  constructor(public status: number, public detail: string) {
+    super(`API ${status}: ${detail}`);
+  }
+}
+
+/** Backend-ийн алдааг хэрэглэгчид ойлгомжтой монгол мессеж болгоно. */
+export function friendlyError(err: unknown): string {
+  if (err instanceof ApiError) {
+    const d = err.detail;
+    if (d.startsWith("NO_SPEECH")) return "Бичлэгээс яриа танигдсангүй. Микрофон ойр байгаа эсэхийг шалгана уу.";
+    if (d.startsWith("ASR_FAILED")) return "Яриаг текст болгоход алдаа гарлаа. Дахин оролдоно уу.";
+    if (d.startsWith("SUMMARY_FAILED")) return "Бичвэр бэлэн боллоо, гэхдээ хурлын бичиг үүсгэхэд алдаа гарлаа.";
+    if (err.status === 404) return "Хурал олдсонгүй.";
+    return d || `Серверийн алдаа (${err.status})`;
+  }
+  if (err instanceof TypeError) return "Сервертэй холбогдож чадсангүй. Интернэт холболтоо шалгана уу.";
+  return err instanceof Error ? err.message : "Тодорхойгүй алдаа";
+}
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {
@@ -8,8 +29,15 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
     ...options,
   });
   if (!res.ok) {
-    const detail = await res.text();
-    throw new Error(`API ${res.status}: ${detail}`);
+    const text = await res.text();
+    let detail = text;
+    try {
+      const json = JSON.parse(text);
+      if (typeof json.detail === "string") detail = json.detail;
+    } catch {
+      // JSON биш хариу — текстээр нь үлдээнэ
+    }
+    throw new ApiError(res.status, detail);
   }
   if (res.status === 204) return undefined as T;
   return res.json();
@@ -48,6 +76,15 @@ export const api = {
 
   deleteMeeting: (id: string) =>
     request<void>(`/api/meetings/${id}`, { method: "DELETE" }),
+
+  /** Бичлэгийг текст болгож, хурлын бичиг үүсгэнэ (урт бичлэгт хэдэн минут болно) */
+  processMeeting: (id: string) =>
+    request<{ meeting_id: string; status: string; transcript_segments: number }>(
+      `/api/meetings/${id}/process`,
+      { method: "POST" },
+    ),
+
+  exportDocxUrl: (id: string) => `${API_BASE}/api/meetings/${id}/export.docx`,
 
   getWsUrl: (meetingId: string) => {
     const wsBase = API_BASE.replace(/^http/, "ws");

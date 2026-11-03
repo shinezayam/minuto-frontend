@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { AudioLoadingAnimation } from "@/components/ui/audio-loading-animation";
-import { api } from "@/lib/api";
+import { API_BASE, api, friendlyError } from "@/lib/api";
 
 export default function UploadPage() {
   const router = useRouter();
@@ -46,10 +46,6 @@ export default function UploadPage() {
       const formData = new FormData();
       formData.append("file", file);
 
-      const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
-      
-      console.log("Uploading to:", `${API_BASE}/api/meetings/${meeting.id}/upload`);
-      
       const res = await fetch(`${API_BASE}/api/meetings/${meeting.id}/upload`, {
         method: "POST",
         body: formData,
@@ -61,27 +57,17 @@ export default function UploadPage() {
         throw new Error(`Upload failed: ${res.status} - ${errorText}`);
       }
 
-      console.log("Upload successful, processing...");
-
-      // Process the audio (transcribe + generate minutes)
-      const processRes = await fetch(`${API_BASE}/api/meetings/${meeting.id}/process`, {
-        method: "POST",
-      });
-
-      if (!processRes.ok) {
-        const errorText = await processRes.text();
-        console.error("Processing failed:", processRes.status, errorText);
-        throw new Error(`Processing failed: ${processRes.status} - ${errorText}`);
+      // Бичлэгийг текст болгож, хурлын бичиг үүсгэнэ
+      try {
+        await api.processMeeting(meeting.id);
+        router.push(`/meetings/${meeting.id}`);
+      } catch (err) {
+        // Файл хадгалагдсан тул дэлгэрэнгүй хуудсанд алдааг харуулж, бичвэр байвал үзүүлнэ
+        router.push(`/meetings/${meeting.id}?error=${encodeURIComponent(friendlyError(err))}`);
       }
-
-      console.log("Processing complete, redirecting...");
-
-      // Redirect to meeting detail page
-      router.push(`/meetings/${meeting.id}`);
     } catch (err) {
       console.error("Upload error:", err);
-      const errorMessage = err instanceof Error ? err.message : "Upload failed";
-      setError(errorMessage);
+      setError(friendlyError(err));
       setUploading(false);
     }
   };

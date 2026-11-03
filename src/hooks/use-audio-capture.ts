@@ -12,7 +12,8 @@ interface UseAudioCaptureReturn {
   startCapture: () => Promise<void>;
   pauseCapture: () => void;
   resumeCapture: () => void;
-  stopCapture: () => void;
+  /** Сүүлийн хэсгийг onChunk-оор гаргаж дуусахыг хүлээгээд микрофоныг хаана */
+  stopCapture: () => Promise<void>;
   audioLevel: number;
   mimeType: string;
 }
@@ -133,10 +134,17 @@ export function useAudioCapture(
     }
   }, []);
 
-  const stopCapture = useCallback(() => {
-    if (recorderRef.current && recorderRef.current.state !== "inactive") {
-      recorderRef.current.stop();
+  const stopCapture = useCallback(async () => {
+    const recorder = recorderRef.current;
+    if (recorder && recorder.state !== "inactive") {
+      // stop() дуудсаны дараа MediaRecorder сүүлийн хэсгээ dataavailable-аар гаргаад, дараа нь "stop" event өгнө.
+      // Тэр хэсгийг алдахгүйн тулд "stop"-ийг хүлээнэ.
+      await new Promise<void>((resolve) => {
+        recorder.addEventListener("stop", () => resolve(), { once: true });
+        recorder.stop();
+      });
     }
+    recorderRef.current = null;
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((t) => t.stop());
       streamRef.current = null;

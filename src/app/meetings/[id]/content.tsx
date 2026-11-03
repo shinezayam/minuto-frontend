@@ -1,14 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
-import { FileText, Clock, Users, CheckCircle, List, Play, Volume2, Download } from "lucide-react";
+import { useParams, useSearchParams } from "next/navigation";
+import { FileText, Clock, Users, CheckCircle, List, Volume2, Download, HelpCircle, AlertCircle } from "lucide-react";
 import { Navbar } from "@/components/layout/navbar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { AudioLoadingAnimation } from "@/components/ui/audio-loading-animation";
-import { api } from "@/lib/api";
+import { API_BASE, api } from "@/lib/api";
 
 interface TranscriptSegment {
   id: string;
@@ -24,6 +24,7 @@ interface MeetingMinutes {
   topics: Array<{ title: string; description: string }>;
   decisions: Array<{ text: string; rationale?: string }>;
   action_items: Array<{ task: string; owner?: string; due_date?: string }>;
+  open_questions?: Array<{ text: string }>;
 }
 
 function formatTime(ms: number): string {
@@ -43,6 +44,8 @@ export default function MeetingDetailContent() {
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // Боловсруулалтын алдаа (upload/live хуудаснаас ?error=... гэж дамжина)
+  const processError = useSearchParams().get("error");
 
   useEffect(() => {
     async function loadData() {
@@ -52,7 +55,6 @@ export default function MeetingDetailContent() {
         setMeeting(meetingData);
 
         // Load transcript
-        const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
         const transcriptRes = await fetch(`${API_BASE}/api/meetings/${meetingId}/transcript`);
         if (transcriptRes.ok) {
           const transcriptData = await transcriptRes.json();
@@ -82,8 +84,7 @@ export default function MeetingDetailContent() {
   }, [meetingId]);
 
   const handleExport = () => {
-    const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
-    window.open(`${API_BASE}/api/meetings/${meetingId}/export.docx`, "_blank");
+    window.open(api.exportDocxUrl(meetingId), "_blank");
   };
 
   if (loading) {
@@ -131,6 +132,13 @@ export default function MeetingDetailContent() {
           )}
         </div>
 
+        {processError && (
+          <div className="mb-6 flex items-start gap-2 rounded-lg bg-destructive/10 p-4 text-sm text-destructive">
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+            <span>{processError}</span>
+          </div>
+        )}
+
         {/* Audio Player */}
         {audioUrl && (
           <Card className="mb-6">
@@ -167,6 +175,9 @@ export default function MeetingDetailContent() {
                   </CardHeader>
                   <CardContent>
                     <p className="text-sm leading-relaxed">{minutes.summary}</p>
+                    <p className="mt-3 text-xs text-muted-foreground">
+                      AI-аар автоматаар үүсгэсэн тул шийдвэр, хариуцагч, хугацааг бичвэртэй тулган шалгана уу.
+                    </p>
                   </CardContent>
                 </Card>
 
@@ -244,6 +255,27 @@ export default function MeetingDetailContent() {
                                 </span>
                               )}
                             </div>
+                          </li>
+                        ))}
+                      </ul>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Open Questions */}
+                {(minutes.open_questions?.length ?? 0) > 0 && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <HelpCircle className="h-5 w-5" />
+                        Нээлттэй асуудлууд
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="space-y-3">
+                        {minutes.open_questions!.map((q, i) => (
+                          <li key={i} className="rounded-lg border border-border p-3 text-sm">
+                            {q.text}
                           </li>
                         ))}
                       </ul>
