@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api } from "@/lib/api";
-import type { AudioChunkData, ConnectionStatus, WSMessage } from "@/lib/types";
+import type { AudioChunkData, ConnectionStatus, LiveSegment, WSMessage } from "@/lib/types";
 
 interface UseWebSocketReturn {
   status: ConnectionStatus;
@@ -16,6 +16,10 @@ interface UseWebSocketReturn {
   ackedCount: number;
   /** Баталгаажаагүй (илгээх гэж буй) хэсгийн тоо */
   pendingCount: number;
+  /** Хурлын үеэр серверээс ирж буй урьдчилсан бичвэр (цагийн дарааллаар) */
+  liveSegments: LiveSegment[];
+  /** Шууд бичвэр түр гарахгүй байгаа үед */
+  liveError: string | null;
 }
 
 const MAX_RECONNECT_ATTEMPTS = 10;
@@ -25,6 +29,8 @@ export function useWebSocket(): UseWebSocketReturn {
   const [error, setError] = useState<string | null>(null);
   const [ackedCount, setAckedCount] = useState(0);
   const [pendingCount, setPendingCount] = useState(0);
+  const [liveSegments, setLiveSegments] = useState<LiveSegment[]>([]);
+  const [liveError, setLiveError] = useState<string | null>(null);
 
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -95,6 +101,25 @@ export function useWebSocket(): UseWebSocketReturn {
           syncCounts();
           break;
         }
+        case "transcript.segment": {
+          const seg: LiveSegment = {
+            id: msg.segment_id as string,
+            start_ms: msg.start_ms as number,
+            end_ms: msg.end_ms as number,
+            text: msg.text as string,
+          };
+          // Дахин холбогдоход сервер бүх хэсгийг дахин илгээдэг — id-аар давхардлыг арилгана
+          setLiveSegments((prev) =>
+            prev.some((s) => s.id === seg.id)
+              ? prev
+              : [...prev, seg].sort((a, b) => a.start_ms - b.start_ms),
+          );
+          setLiveError(null);
+          break;
+        }
+        case "transcript.error":
+          setLiveError((msg.message as string) || "Шууд бичвэр түр гарахгүй байна");
+          break;
         case "error":
           setError(`${msg.code}: ${msg.message}`);
           break;
@@ -105,6 +130,9 @@ export function useWebSocket(): UseWebSocketReturn {
 
   const connect = useCallback(
     (meetingId: string) => {
+      if (meetingIdRef.current && meetingIdRef.current !== meetingId) {
+        setLiveSegments([]);
+      }
       meetingIdRef.current = meetingId;
       intentionalDisconnectRef.current = false;
       setError(null);
@@ -193,5 +221,16 @@ export function useWebSocket(): UseWebSocketReturn {
     };
   }, []);
 
-  return { status, error, connect, disconnect, sendAudioChunk, flush, ackedCount, pendingCount };
+  return {
+    status,
+    error,
+    connect,
+    disconnect,
+    sendAudioChunk,
+    flush,
+    ackedCount,
+    pendingCount,
+    liveSegments,
+    liveError,
+  };
 }

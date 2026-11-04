@@ -52,6 +52,7 @@ export type WSMessageType =
   | "audio.chunk"
   | "transcript.segment"
   | "processing.status"
+  | "transcript.error"
   | "error";
 
 export interface WSMessage {
@@ -97,6 +98,14 @@ export interface WSTranscriptSegment {
   end_ms: number;
   text: string;
   status: "provisional" | "final";
+}
+
+/** Хурлын үеэр харуулах урьдчилсан бичвэр (хурал дууссаны дараа бүтэн бичвэрээр солигдоно) */
+export interface LiveSegment {
+  id: string;
+  start_ms: number;
+  end_ms: number;
+  text: string;
 }
 
 export type ConnectionStatus = "disconnected" | "connecting" | "connected" | "reconnecting";

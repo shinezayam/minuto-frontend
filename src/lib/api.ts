@@ -77,7 +77,7 @@ function withToken(url: string): string {
 type AuthResponse = { token: string; user: AuthUser };
 
 export const api = {
-  health: () => request<{ status: string; version: string }>("/api/health"),
+  health: () => request<{ status: string; version: string; live_transcription?: boolean }>("/api/health"),
 
   // ---------- Нэвтрэлт ----------
   login: (email: string, password: string) =>
