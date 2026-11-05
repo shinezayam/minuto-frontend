@@ -1,23 +1,30 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Mic, Clock, Calendar, Trash2, FileText, Download, Upload } from "lucide-react";
+import { Mic, Clock, Calendar, Trash2, FileText, Download, Upload, Search, Filter, SortAsc, SortDesc, BarChart3 } from "lucide-react";
 import { Navbar } from "@/components/layout/navbar";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { api, friendlyError } from "@/lib/api";
 import { AuthGuard } from "@/components/layout/auth-guard";
 import { formatDate, formatDuration } from "@/lib/audio-utils";
 import type { Meeting } from "@/lib/types";
 
+type SortField = "date" | "title" | "duration";
+type SortOrder = "asc" | "desc";
+
 function DashboardContent() {
   const router = useRouter();
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [loading, setLoading] = useState(true);
-
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortField, setSortField] = useState<SortField>("date");
+  const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
 
   useEffect(() => {
     api
@@ -36,6 +43,51 @@ function DashboardContent() {
     }, 5000);
     return () => clearInterval(t);
   }, [anyProcessing]);
+
+  // Filter and sort meetings
+  const filteredAndSortedMeetings = useMemo(() => {
+    let filtered = meetings;
+
+    // Search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter((m) => 
+        m.title.toLowerCase().includes(query)
+      );
+    }
+
+    // Status filter
+    if (statusFilter !== "all") {
+      filtered = filtered.filter((m) => m.status === statusFilter);
+    }
+
+    // Sort
+    const sorted = [...filtered].sort((a, b) => {
+      let comparison = 0;
+      
+      if (sortField === "date") {
+        comparison = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+      } else if (sortField === "title") {
+        comparison = a.title.localeCompare(b.title);
+      } else if (sortField === "duration") {
+        comparison = a.duration_ms - b.duration_ms;
+      }
+      
+      return sortOrder === "asc" ? comparison : -comparison;
+    });
+
+    return sorted;
+  }, [meetings, searchQuery, statusFilter, sortField, sortOrder]);
+
+  // Statistics
+  const stats = useMemo(() => {
+    const total = meetings.length;
+    const completed = meetings.filter((m) => m.status === "completed").length;
+    const totalDuration = meetings.reduce((sum, m) => sum + m.duration_ms, 0);
+    const processing = meetings.filter((m) => m.status === "processing").length;
+    
+    return { total, completed, totalDuration, processing };
+  }, [meetings]);
 
   const handleDelete = async (id: string) => {
     if (!confirm("Энэ хурлыг устгах уу?")) return;
@@ -60,9 +112,10 @@ function DashboardContent() {
     <>
       <Navbar />
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between">
+        {/* Header */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Хурлууд</h1>
+            <h1 className="text-3xl font-bold tracking-tight">Хурлууд</h1>
             <p className="mt-1 text-sm text-muted-foreground">
               Таны бүх хурлын бичлэг болон бичвэр
             </p>
@@ -79,6 +132,113 @@ function DashboardContent() {
           </div>
         </div>
 
+        {/* Statistics Cards */}
+        {!loading && meetings.length > 0 && (
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <Card className="relative overflow-hidden">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Нийт хурал</p>
+                    <p className="text-2xl font-bold">{stats.total}</p>
+                  </div>
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+                    <BarChart3 className="h-6 w-6 text-primary" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="relative overflow-hidden">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Дууссан</p>
+                    <p className="text-2xl font-bold">{stats.completed}</p>
+                  </div>
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-500/10">
+                    <FileText className="h-6 w-6 text-green-600" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="relative overflow-hidden">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Нийт хугацаа</p>
+                    <p className="text-2xl font-bold">{formatDuration(stats.totalDuration)}</p>
+                  </div>
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-500/10">
+                    <Clock className="h-6 w-6 text-blue-600" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="relative overflow-hidden">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Боловсруулж буй</p>
+                    <p className="text-2xl font-bold">{stats.processing}</p>
+                  </div>
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-orange-500/10">
+                    <Clock className="h-6 w-6 animate-pulse text-orange-600" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Search and Filters */}
+        {!loading && meetings.length > 0 && (
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Хурал хайх..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="h-9 rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              >
+                <option value="all">Бүх төлөв</option>
+                <option value="completed">Дууссан</option>
+                <option value="processing">Боловсруулж буй</option>
+                <option value="recording">Бичиж буй</option>
+                <option value="draft">Ноорог</option>
+              </select>
+              <select
+                value={sortField}
+                onChange={(e) => setSortField(e.target.value as SortField)}
+                className="h-9 rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              >
+                <option value="date">Огноогоор</option>
+                <option value="title">Гарчигаар</option>
+                <option value="duration">Хугацаагаар</option>
+              </select>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+                title={sortOrder === "asc" ? "Өсөх" : "Буурах"}
+              >
+                {sortOrder === "asc" ? (
+                  <SortAsc className="h-4 w-4" />
+                ) : (
+                  <SortDesc className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+          </div>
+        )}
+
         {loading ? (
           <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {[1, 2, 3].map((i) => (
@@ -91,9 +251,29 @@ function DashboardContent() {
           <div className="mt-8 rounded-lg bg-destructive/10 p-4 text-sm text-destructive">{loadError}</div>
         ) : meetings.length === 0 ? (
           <EmptyState onCreateNew={handleNewMeeting} />
+        ) : filteredAndSortedMeetings.length === 0 ? (
+          <div className="mt-8 flex flex-col items-center justify-center py-12 text-center">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
+              <Search className="h-8 w-8 text-muted-foreground" />
+            </div>
+            <h3 className="mt-4 text-lg font-semibold">Хурал олдсонгүй</h3>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Хайлтын өөр түлхүүр үг эсвэл шүүлтүүр ашиглана уу
+            </p>
+            <Button 
+              variant="outline" 
+              className="mt-4"
+              onClick={() => {
+                setSearchQuery("");
+                setStatusFilter("all");
+              }}
+            >
+              Шүүлтүүр цэвэрлэх
+            </Button>
+          </div>
         ) : (
           <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {meetings.map((meeting) => (
+            {filteredAndSortedMeetings.map((meeting) => (
               <MeetingCard
                 key={meeting.id}
                 meeting={meeting}
@@ -116,10 +296,10 @@ function MeetingCard({
 }) {
   const statusColors: Record<string, string> = {
     draft: "bg-muted text-muted-foreground",
-    recording: "bg-red-100 text-red-700",
-    paused: "bg-yellow-100 text-yellow-700",
-    completed: "bg-green-100 text-green-700",
-    processing: "bg-blue-100 text-blue-700",
+    recording: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+    paused: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
+    completed: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
+    processing: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
     failed: "bg-destructive/10 text-destructive",
   };
 
@@ -132,13 +312,27 @@ function MeetingCard({
     failed: "Алдаа",
   };
 
+  const statusIcons: Record<string, string> = {
+    draft: "📝",
+    recording: "🔴",
+    paused: "⏸️",
+    completed: "✅",
+    processing: "⚙️",
+    failed: "❌",
+  };
+
   return (
-    <Card className="group relative transition-shadow hover:shadow-md">
+    <Card className="group relative overflow-hidden transition-all hover:shadow-lg hover:ring-2 hover:ring-primary/20">
+      {/* Status indicator bar */}
+      <div className={`h-1 w-full ${statusColors[meeting.status]?.split(" ")[0] || "bg-muted"}`} />
+      
       <CardContent className="p-5">
-        <div className="flex items-start justify-between">
+        <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
-            <h3 className="truncate font-semibold">{meeting.title}</h3>
-            <div className="mt-2 flex items-center gap-3 text-xs text-muted-foreground">
+            <h3 className="truncate font-semibold text-lg leading-tight group-hover:text-primary transition-colors">
+              {meeting.title}
+            </h3>
+            <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
               <span className="flex items-center gap-1">
                 <Calendar className="h-3 w-3" />
                 {formatDate(meeting.created_at)}
@@ -152,8 +346,9 @@ function MeetingCard({
             </div>
           </div>
           <span
-            className={`ml-2 shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${statusColors[meeting.status] || "bg-muted"}`}
+            className={`shrink-0 inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${statusColors[meeting.status] || "bg-muted"}`}
           >
+            <span className="text-xs">{statusIcons[meeting.status]}</span>
             {statusLabels[meeting.status] || meeting.status}
           </span>
         </div>
@@ -163,7 +358,7 @@ function MeetingCard({
             href={meeting.status === "recording" || meeting.status === "paused" ? `/meetings/${meeting.id}/live` : `/meetings/${meeting.id}`}
             className="flex-1"
           >
-            <Button variant="outline" size="sm" className="w-full gap-1.5">
+            <Button variant="outline" size="sm" className="w-full gap-1.5 transition-all group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary">
               <FileText className="h-3.5 w-3.5" />
               {meeting.status === "recording" || meeting.status === "paused" ? "Үргэлжлүүлэх" : "Нээх"}
             </Button>
@@ -172,7 +367,7 @@ function MeetingCard({
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8"
+              className="h-8 w-8 shrink-0"
               title="DOCX татах"
               onClick={() => api.downloadDocx(meeting.id).catch((err) => alert(friendlyError(err)))}
             >
@@ -182,7 +377,7 @@ function MeetingCard({
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 text-muted-foreground hover:text-destructive"
+            className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive"
             onClick={onDelete}
           >
             <Trash2 className="h-4 w-4" />
@@ -196,22 +391,51 @@ function MeetingCard({
 function EmptyState({ onCreateNew }: { onCreateNew: () => void }) {
   return (
     <div className="mt-16 flex flex-col items-center justify-center text-center">
-      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
-        <Mic className="h-8 w-8 text-muted-foreground" />
+      <div className="relative">
+        <div className="flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-primary/5">
+          <Mic className="h-12 w-12 text-primary" />
+        </div>
+        <div className="absolute -right-2 -top-2 flex h-10 w-10 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
+          <span className="text-xl">✨</span>
+        </div>
       </div>
-      <h3 className="mt-4 text-lg font-semibold">Хурал алга байна</h3>
-      <p className="mt-2 max-w-sm text-sm text-muted-foreground">
-        Эхний хурлаа бичих эсвэл бэлэн аудио бичлэгээ оруулаад AI-р хурлын тэмдэглэл үүсгээрэй.
+      <h3 className="mt-6 text-xl font-semibold">Хурал алга байна</h3>
+      <p className="mt-3 max-w-md text-sm text-muted-foreground leading-relaxed">
+        Эхний хурлаа бичих эсвэл бэлэн аудио бичлэгээ оруулаад AI-р хурлын тэмдэглэл үүсгээрэй. 
+        Монгол хэлний бичвэр, хурлын бичиг автоматаар үүснэ.
       </p>
-      <div className="mt-6 flex flex-col gap-2 sm:flex-row">
-        <Button onClick={onCreateNew} className="gap-2">
+      <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+        <Button onClick={onCreateNew} className="gap-2 h-11 px-6">
           <Mic className="h-4 w-4" />
           Шинэ хурал эхлүүлэх
         </Button>
-        <Link href="/upload" className={buttonVariants({ variant: "outline", className: "gap-2" })}>
+        <Link href="/upload" className={buttonVariants({ variant: "outline", className: "gap-2 h-11 px-6" })}>
           <Upload className="h-4 w-4" />
           Аудио файл оруулах
         </Link>
+      </div>
+      <div className="mt-12 grid max-w-2xl gap-4 sm:grid-cols-3">
+        <div className="flex flex-col items-center gap-2 rounded-lg border border-border p-4">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30">
+            <span className="text-lg">🎙️</span>
+          </div>
+          <p className="text-sm font-medium">Онлайн хурал</p>
+          <p className="text-xs text-muted-foreground text-center">Браузераас шууд бичих</p>
+        </div>
+        <div className="flex flex-col items-center gap-2 rounded-lg border border-border p-4">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-900/30">
+            <span className="text-lg">📤</span>
+          </div>
+          <p className="text-sm font-medium">Файл оруулах</p>
+          <p className="text-xs text-muted-foreground text-center">Аудио файл хуулах</p>
+        </div>
+        <div className="flex flex-col items-center gap-2 rounded-lg border border-border p-4">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
+            <span className="text-lg">📝</span>
+          </div>
+          <p className="text-sm font-medium">AI бичиг</p>
+          <p className="text-xs text-muted-foreground text-center">Автомат хурлын бичиг</p>
+        </div>
       </div>
     </div>
   );
