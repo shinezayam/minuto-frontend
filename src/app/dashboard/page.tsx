@@ -121,11 +121,11 @@ function DashboardContent() {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <Link href="/upload" className={buttonVariants({ variant: "outline", className: "gap-2" })}>
+            <Link href="/upload" className={buttonVariants({ variant: "outline", className: "gap-2 rounded-full" })}>
               <Upload className="h-4 w-4" />
               <span className="hidden sm:inline">Аудио оруулах</span>
             </Link>
-            <Button onClick={handleNewMeeting} className="gap-2">
+            <Button onClick={handleNewMeeting} className="gap-2 rounded-full bg-foreground text-background hover:bg-foreground/90">
               <Mic className="h-4 w-4" />
               Шинэ хурал
             </Button>
@@ -135,54 +135,54 @@ function DashboardContent() {
         {/* Statistics Cards */}
         {!loading && meetings.length > 0 && (
           <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <Card className="relative overflow-hidden">
+            <Card className="relative overflow-hidden rounded-2xl">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Нийт хурал</p>
-                    <p className="text-2xl font-bold">{stats.total}</p>
+                    <p className="mt-1 font-display text-3xl font-bold">{stats.total}</p>
                   </div>
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
                     <BarChart3 className="h-6 w-6 text-primary" />
                   </div>
                 </div>
               </CardContent>
             </Card>
-            <Card className="relative overflow-hidden">
+            <Card className="relative overflow-hidden rounded-2xl">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Дууссан</p>
-                    <p className="text-2xl font-bold">{stats.completed}</p>
+                    <p className="mt-1 font-display text-3xl font-bold">{stats.completed}</p>
                   </div>
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-500/10">
-                    <FileText className="h-6 w-6 text-green-600" />
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[oklch(0.95_0.05_150)] dark:bg-[oklch(0.3_0.05_150)]">
+                    <FileText className="h-6 w-6 text-[oklch(0.42_0.12_150)] dark:text-[oklch(0.7_0.15_150)]" />
                   </div>
                 </div>
               </CardContent>
             </Card>
-            <Card className="relative overflow-hidden">
+            <Card className="relative overflow-hidden rounded-2xl">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Нийт хугацаа</p>
-                    <p className="text-2xl font-bold">{formatDuration(stats.totalDuration)}</p>
+                    <p className="mt-1 font-display text-3xl font-bold">{formatDuration(stats.totalDuration)}</p>
                   </div>
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-500/10">
-                    <Clock className="h-6 w-6 text-blue-600" />
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+                    <Clock className="h-6 w-6 text-primary" />
                   </div>
                 </div>
               </CardContent>
             </Card>
-            <Card className="relative overflow-hidden">
+            <Card className="relative overflow-hidden rounded-2xl">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Боловсруулж буй</p>
-                    <p className="text-2xl font-bold">{stats.processing}</p>
+                    <p className="mt-1 font-display text-3xl font-bold">{stats.processing}</p>
                   </div>
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-orange-500/10">
-                    <Clock className="h-6 w-6 animate-pulse text-orange-600" />
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[oklch(0.96_0.06_85)] dark:bg-[oklch(0.3_0.06_85)]">
+                    <Clock className="h-6 w-6 animate-pulse text-[oklch(0.47_0.11_70)] dark:text-[oklch(0.7_0.11_70)]" />
                   </div>
                 </div>
               </CardContent>
@@ -199,14 +199,14 @@ function DashboardContent() {
                 placeholder="Хурал хайх..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
+                className="rounded-full pl-9"
               />
             </div>
             <div className="flex items-center gap-2">
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="h-9 rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                className="h-10 rounded-full border border-input bg-background px-4 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               >
                 <option value="all">Бүх төлөв</option>
                 <option value="completed">Дууссан</option>
@@ -217,7 +217,7 @@ function DashboardContent() {
               <select
                 value={sortField}
                 onChange={(e) => setSortField(e.target.value as SortField)}
-                className="h-9 rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                className="h-10 rounded-full border border-input bg-background px-4 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               >
                 <option value="date">Огноогоор</option>
                 <option value="title">Гарчигаар</option>
@@ -228,6 +228,7 @@ function DashboardContent() {
                 size="icon"
                 onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
                 title={sortOrder === "asc" ? "Өсөх" : "Буурах"}
+                className="rounded-full"
               >
                 {sortOrder === "asc" ? (
                   <SortAsc className="h-4 w-4" />
@@ -256,13 +257,13 @@ function DashboardContent() {
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
               <Search className="h-8 w-8 text-muted-foreground" />
             </div>
-            <h3 className="mt-4 text-lg font-semibold">Хурал олдсонгүй</h3>
+            <h3 className="mt-4 font-display text-lg font-bold">Хурал олдсонгүй</h3>
             <p className="mt-2 text-sm text-muted-foreground">
               Хайлтын өөр түлхүүр үг эсвэл шүүлтүүр ашиглана уу
             </p>
             <Button 
               variant="outline" 
-              className="mt-4"
+              className="mt-4 rounded-full"
               onClick={() => {
                 setSearchQuery("");
                 setStatusFilter("all");
@@ -322,14 +323,14 @@ function MeetingCard({
   };
 
   return (
-    <Card className="group relative overflow-hidden transition-all hover:shadow-lg hover:ring-2 hover:ring-primary/20">
+    <Card className="group relative overflow-hidden rounded-2xl border-border shadow-sm transition-all hover:shadow-md">
       {/* Status indicator bar */}
       <div className={`h-1 w-full ${statusColors[meeting.status]?.split(" ")[0] || "bg-muted"}`} />
       
       <CardContent className="p-5">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
-            <h3 className="truncate font-semibold text-lg leading-tight group-hover:text-primary transition-colors">
+            <h3 className="truncate font-display text-lg font-bold leading-tight group-hover:text-primary transition-colors">
               {meeting.title}
             </h3>
             <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
@@ -358,7 +359,7 @@ function MeetingCard({
             href={meeting.status === "recording" || meeting.status === "paused" ? `/meetings/${meeting.id}/live` : `/meetings/${meeting.id}`}
             className="flex-1"
           >
-            <Button variant="outline" size="sm" className="w-full gap-1.5 transition-all group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary">
+            <Button variant="outline" size="sm" className="w-full gap-1.5 rounded-full transition-all group-hover:bg-foreground group-hover:text-background group-hover:border-foreground">
               <FileText className="h-3.5 w-3.5" />
               {meeting.status === "recording" || meeting.status === "paused" ? "Үргэлжлүүлэх" : "Нээх"}
             </Button>
@@ -367,7 +368,7 @@ function MeetingCard({
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 shrink-0"
+              className="h-8 w-8 shrink-0 rounded-full"
               title="DOCX татах"
               onClick={() => api.downloadDocx(meeting.id).catch((err) => alert(friendlyError(err)))}
             >
@@ -377,7 +378,7 @@ function MeetingCard({
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive"
+            className="h-8 w-8 shrink-0 rounded-full text-muted-foreground hover:text-destructive"
             onClick={onDelete}
           >
             <Trash2 className="h-4 w-4" />
@@ -392,48 +393,48 @@ function EmptyState({ onCreateNew }: { onCreateNew: () => void }) {
   return (
     <div className="mt-16 flex flex-col items-center justify-center text-center">
       <div className="relative">
-        <div className="flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-primary/5">
+        <div className="flex h-24 w-24 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5">
           <Mic className="h-12 w-12 text-primary" />
         </div>
-        <div className="absolute -right-2 -top-2 flex h-10 w-10 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
+        <div className="absolute -right-2 -top-2 flex h-10 w-10 items-center justify-center rounded-xl bg-[oklch(0.95_0.05_150)] dark:bg-[oklch(0.3_0.05_150)]">
           <span className="text-xl">✨</span>
         </div>
       </div>
-      <h3 className="mt-6 text-xl font-semibold">Хурал алга байна</h3>
+      <h3 className="mt-6 font-display text-xl font-bold">Хурал алга байна</h3>
       <p className="mt-3 max-w-md text-sm text-muted-foreground leading-relaxed">
         Эхний хурлаа бичих эсвэл бэлэн аудио бичлэгээ оруулаад AI-р хурлын тэмдэглэл үүсгээрэй. 
         Монгол хэлний бичвэр, хурлын бичиг автоматаар үүснэ.
       </p>
       <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-        <Button onClick={onCreateNew} className="gap-2 h-11 px-6">
+        <Button onClick={onCreateNew} className="gap-2 h-12 px-7 rounded-full bg-foreground text-background hover:bg-foreground/90">
           <Mic className="h-4 w-4" />
           Шинэ хурал эхлүүлэх
         </Button>
-        <Link href="/upload" className={buttonVariants({ variant: "outline", className: "gap-2 h-11 px-6" })}>
+        <Link href="/upload" className={buttonVariants({ variant: "outline", className: "gap-2 h-12 px-7 rounded-full" })}>
           <Upload className="h-4 w-4" />
           Аудио файл оруулах
         </Link>
       </div>
       <div className="mt-12 grid max-w-2xl gap-4 sm:grid-cols-3">
-        <div className="flex flex-col items-center gap-2 rounded-lg border border-border p-4">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30">
+        <div className="flex flex-col items-center gap-2 rounded-2xl border border-border bg-card p-5">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10">
             <span className="text-lg">🎙️</span>
           </div>
-          <p className="text-sm font-medium">Онлайн хурал</p>
+          <p className="font-display text-sm font-bold">Онлайн хурал</p>
           <p className="text-xs text-muted-foreground text-center">Браузераас шууд бичих</p>
         </div>
-        <div className="flex flex-col items-center gap-2 rounded-lg border border-border p-4">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-900/30">
+        <div className="flex flex-col items-center gap-2 rounded-2xl border border-border bg-card p-5">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10">
             <span className="text-lg">📤</span>
           </div>
-          <p className="text-sm font-medium">Файл оруулах</p>
+          <p className="font-display text-sm font-bold">Файл оруулах</p>
           <p className="text-xs text-muted-foreground text-center">Аудио файл хуулах</p>
         </div>
-        <div className="flex flex-col items-center gap-2 rounded-lg border border-border p-4">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
+        <div className="flex flex-col items-center gap-2 rounded-2xl border border-border bg-card p-5">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10">
             <span className="text-lg">📝</span>
           </div>
-          <p className="text-sm font-medium">AI бичиг</p>
+          <p className="font-display text-sm font-bold">AI бичиг</p>
           <p className="text-xs text-muted-foreground text-center">Автомат хурлын бичиг</p>
         </div>
       </div>

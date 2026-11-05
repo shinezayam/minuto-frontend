@@ -232,14 +232,14 @@ function UploadContent() {
                     variant="outline"
                     onClick={clearFile}
                     disabled={uploading}
-                    className="px-6"
+                    className="rounded-full px-6"
                   >
                     Цуцлах
                   </Button>
                   <Button
                     onClick={handleUpload}
                     disabled={uploading}
-                    className="flex-1 gap-2"
+                    className="flex-1 gap-2 rounded-full bg-foreground text-background hover:bg-foreground/90"
                   >
                     {uploading ? (
                       <>
