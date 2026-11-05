@@ -2,14 +2,16 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { LogOut, Mic, Menu, X, ChevronDown, User, Upload, Sparkles, LayoutDashboard } from "lucide-react";
+import { LogOut, Mic, Menu, X, ChevronDown, User, Upload, Sparkles, LayoutDashboard, PenLine } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { Logo } from "@/components/brand/logo";
 import { clearAuth, useAuth } from "@/lib/auth";
+import { ProfileNameDialog } from "@/components/layout/profile-name-dialog";
 
 export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [nameOpen, setNameOpen] = useState(false);
   const user = useAuth();
   const router = useRouter();
   const profileRef = useRef<HTMLDivElement>(null);
@@ -59,7 +61,7 @@ export function Navbar() {
                   <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10">
                     <User className="h-3.5 w-3.5 text-primary" />
                   </div>
-                  <span className="max-w-[120px] truncate font-medium">{user.email}</span>
+                  <span className="max-w-[120px] truncate font-medium">{user.name || user.email}</span>
                   <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground transition-transform ${profileOpen ? "rotate-180" : ""}`} />
                 </button>
 
@@ -67,9 +69,23 @@ export function Navbar() {
                   <div className="absolute right-0 top-full mt-2 w-56 overflow-hidden rounded-xl border border-border bg-card shadow-lg">
                     <div className="border-b border-border px-4 py-3">
                       <p className="text-xs text-muted-foreground">Нэвтэрсэн</p>
-                      <p className="mt-0.5 truncate text-sm font-medium">{user.email}</p>
+                      {user.name && <p className="mt-0.5 truncate text-sm font-medium">{user.name}</p>}
+                      <p className={user.name ? "truncate text-xs text-muted-foreground" : "mt-0.5 truncate text-sm font-medium"}>
+                        {user.email}
+                      </p>
                     </div>
                     <div className="p-1.5">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setProfileOpen(false);
+                          setNameOpen(true);
+                        }}
+                        className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-muted"
+                      >
+                        <PenLine className="h-4 w-4 text-muted-foreground" />
+                        {user.name ? "Нэрээ засах" : "Нэрээ оруулах"}
+                      </button>
                       <Link
                         href="/dashboard"
                         onClick={() => setProfileOpen(false)}
@@ -149,8 +165,22 @@ export function Navbar() {
                     <User className="h-5 w-5 text-primary" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium">{user.email}</p>
+                    {user.name && <p className="truncate text-sm font-medium">{user.name}</p>}
+                    <p className={user.name ? "truncate text-xs text-muted-foreground" : "truncate text-sm font-medium"}>
+                      {user.email}
+                    </p>
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileOpen(false);
+                      setNameOpen(true);
+                    }}
+                    className="rounded-full p-2 text-muted-foreground hover:bg-muted"
+                    aria-label="Нэрээ засах"
+                  >
+                    <PenLine className="h-4 w-4" />
+                  </button>
                 </div>
 
                 {/* Primary action */}
@@ -212,6 +242,7 @@ export function Navbar() {
           </div>
         </div>
       )}
+      {user && <ProfileNameDialog user={user} open={nameOpen} onOpenChange={setNameOpen} />}
     </header>
   );
 }
