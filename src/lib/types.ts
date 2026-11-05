@@ -118,3 +118,28 @@ export interface AudioChunkData {
   timestamp_ms: number;
   duration_ms: number;
 }
+
+// ---------- Ask Minuto ----------
+
+/** Хариултын эх сурвалж — бичвэрийн тодорхой хэсэг, цаг */
+export interface AskCitation {
+  /** Хариулт дахь "[S12]" шошго */
+  ref: string;
+  meeting_id: string;
+  meeting_title: string;
+  segment_id: string;
+  start_ms: number;
+  end_ms: number;
+  text: string;
+}
+
+export interface AskResponse {
+  answer: string;
+  citations: AskCitation[];
+  meetings_searched: number;
+}
+
+export interface AskMessage {
+  role: "user" | "assistant";
+  content: string;
+}

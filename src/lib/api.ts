@@ -1,4 +1,11 @@
-import type { Meeting, MeetingListResponse, MeetingMinutes, TranscriptSegment } from "./types";
+import type {
+  AskMessage,
+  AskResponse,
+  Meeting,
+  MeetingListResponse,
+  MeetingMinutes,
+  TranscriptSegment,
+} from "./types";
 import { getToken, handleUnauthorized, type AuthUser } from "./auth";
 
 /** Backend-ийн хаяг. Production build-д NEXT_PUBLIC_API_BASE_URL заавал тохируулна. */
@@ -22,6 +29,7 @@ export function friendlyErrorText(detail: string | null | undefined): string {
   if (d.startsWith("INVALID_CREDENTIALS")) return "Имэйл эсвэл нууц үг буруу байна.";
   if (d.startsWith("EMAIL_TAKEN")) return "Энэ имэйлээр бүртгэл үүссэн байна. Нэвтэрнэ үү.";
   if (d.startsWith("REGISTRATION_CLOSED")) return "Шинэ бүртгэл хаалттай байна.";
+  if (d.startsWith("ASK_FAILED")) return "AI хариулт өгч чадсангүй. Түр хүлээгээд дахин асууна уу.";
   if (d.startsWith("INTERNAL_ERROR")) return "Серверт алдаа гарлаа. Дахин оролдоно уу.";
   return d.replace(/^[A-Z_]+:\s*/, "") || "Тодорхойгүй алдаа";
 }
@@ -138,6 +146,13 @@ export const api = {
       throw err;
     }
   },
+
+  /** Ask Minuto — meetingId өгвөл зөвхөн тэр хурлаас, үгүй бол бүх хурлаас асууна */
+  ask: (question: string, meetingId?: string, history: AskMessage[] = []) =>
+    request<AskResponse>("/api/ask", {
+      method: "POST",
+      body: JSON.stringify({ question, meeting_id: meetingId ?? null, history }),
+    }),
 
   audioUrl: (id: string) => withToken(`${API_BASE}/api/meetings/${id}/audio`),
 

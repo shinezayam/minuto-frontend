@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { LogIn, LogOut, Mic, Menu, X } from "lucide-react";
+import { LogIn, LogOut, Mic, Menu, Sparkles, X } from "lucide-react";
 import { useState } from "react";
 import { clearAuth, useAuth } from "@/lib/auth";
 
@@ -35,6 +35,13 @@ export function Navbar() {
                 className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
               >
                 Хурлууд
+              </Link>
+              <Link
+                href="/ask"
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <Sparkles className="h-4 w-4" />
+                Ask Minuto
               </Link>
               <Link
                 href="/meetings/new/live"
@@ -78,6 +85,10 @@ export function Navbar() {
                 <span className="truncate text-xs text-muted-foreground">{user.email}</span>
                 <Link href="/dashboard" className="text-sm font-medium text-muted-foreground" onClick={() => setMobileOpen(false)}>
                   Хурлууд
+                </Link>
+                <Link href="/ask" className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground" onClick={() => setMobileOpen(false)}>
+                  <Sparkles className="h-4 w-4" />
+                  Ask Minuto
                 </Link>
                 <Link
                   href="/meetings/new/live"
