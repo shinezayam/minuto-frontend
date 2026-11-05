@@ -29,6 +29,7 @@ export function friendlyErrorText(detail: string | null | undefined): string {
   if (d.startsWith("INVALID_CREDENTIALS")) return "Имэйл эсвэл нууц үг буруу байна.";
   if (d.startsWith("EMAIL_TAKEN")) return "Энэ имэйлээр бүртгэл үүссэн байна. Нэвтэрнэ үү.";
   if (d.startsWith("REGISTRATION_CLOSED")) return "Шинэ бүртгэл хаалттай байна.";
+  if (d.startsWith("NO_MINUTES")) return "Хурлын бичиг үүсээгүй байна. Хурлыг нээж боловсруулалтын алдааг шалгаад дахин боловсруулна уу.";
   if (d.startsWith("ASK_FAILED")) return "AI хариулт өгч чадсангүй. Түр хүлээгээд дахин асууна уу.";
   if (d.startsWith("INTERNAL_ERROR")) return "Серверт алдаа гарлаа. Дахин оролдоно уу.";
   return d.replace(/^[A-Z_]+:\s*/, "") || "Тодорхойгүй алдаа";
@@ -37,7 +38,7 @@ export function friendlyErrorText(detail: string | null | undefined): string {
 export function friendlyError(err: unknown): string {
   if (err instanceof ApiError) {
     if (err.status === 422 && err.detail.startsWith("[")) return "Оруулсан мэдээлэл буруу байна. Имэйл зөв, нууц үг 8+ тэмдэгт байх ёстой.";
-    if (err.status === 404) return "Хурал олдсонгүй.";
+    if (err.status === 404 && !err.detail.startsWith("NO_MINUTES")) return "Хурал олдсонгүй.";
     return friendlyErrorText(err.detail) || `Серверийн алдаа (${err.status})`;
   }
   if (err instanceof TypeError) return "Сервертэй холбогдож чадсангүй. Интернэт холболтоо шалгана уу. (Сервер унтсан бол 1 минут орчим хүлээнэ үү.)";
@@ -157,6 +158,26 @@ export const api = {
   audioUrl: (id: string) => withToken(`${API_BASE}/api/meetings/${id}/audio`),
 
   exportDocxUrl: (id: string) => withToken(`${API_BASE}/api/meetings/${id}/export.docx`),
+
+  /** DOCX-ийг татна. Хурлын бичиг үүсээгүй бол серверийн JSON-ийг харуулахын оронд алдаа шиднэ. */
+  downloadDocx: async (id: string) => {
+    const res = await fetch(`${API_BASE}/api/meetings/${id}/export.docx`, { headers: authHeaders() });
+    if (!res.ok) {
+      if (res.status === 401) handleUnauthorized();
+      throw new ApiError(
+        res.status,
+        res.status === 404 ? "NO_MINUTES: Хурлын бичиг үүсээгүй байна" : await res.text(),
+      );
+    }
+    const url = URL.createObjectURL(await res.blob());
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `meeting_${id}.docx`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 10_000);
+  },
 
   getWsUrl: (meetingId: string) => withToken(`${API_BASE.replace(/^http/, "ws")}/ws/meetings/${meetingId}/audio`),
 };

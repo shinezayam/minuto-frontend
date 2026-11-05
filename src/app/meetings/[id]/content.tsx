@@ -205,7 +205,7 @@ export default function MeetingDetailContent() {
   };
 
   const handleExport = () => {
-    window.open(api.exportDocxUrl(meetingId), "_blank");
+    api.downloadDocx(meetingId).catch((err) => setError(friendlyError(err)));
   };
 
   if (loading) {

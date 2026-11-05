@@ -163,11 +163,15 @@ function MeetingCard({
             </Button>
           </Link>
           {meeting.status === "completed" && (
-            <a href={api.exportDocxUrl(meeting.id)} target="_blank" rel="noopener noreferrer">
-              <Button variant="ghost" size="icon" className="h-8 w-8" title="DOCX татах">
-                <Download className="h-4 w-4" />
-              </Button>
-            </a>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              title="DOCX татах"
+              onClick={() => api.downloadDocx(meeting.id).catch((err) => alert(friendlyError(err)))}
+            >
+              <Download className="h-4 w-4" />
+            </Button>
           )}
           <Button
             variant="ghost"
