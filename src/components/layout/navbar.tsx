@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { LogIn, LogOut, Mic, Menu, Sparkles, X } from "lucide-react";
+import { LogIn, LogOut, Mic, Menu, Sparkles, Upload, X } from "lucide-react";
 import { useState } from "react";
+import { Logo } from "@/components/brand/logo";
 import { clearAuth, useAuth } from "@/lib/auth";
 
 export function Navbar() {
@@ -20,11 +21,8 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-sm">
       <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Link href="/" className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-            <Mic className="h-4 w-4 text-primary-foreground" />
-          </div>
-          <span className="text-lg font-semibold tracking-tight">AI Minutes</span>
+        <Link href="/" aria-label="Minuto нүүр хуудас">
+          <Logo />
         </Link>
 
         <div className="hidden items-center gap-6 md:flex">
@@ -42,6 +40,13 @@ export function Navbar() {
               >
                 <Sparkles className="h-4 w-4" />
                 Ask Minuto
+              </Link>
+              <Link
+                href="/upload"
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <Upload className="h-4 w-4" />
+                Аудио оруулах
               </Link>
               <Link
                 href="/meetings/new/live"
@@ -89,6 +94,10 @@ export function Navbar() {
                 <Link href="/ask" className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground" onClick={() => setMobileOpen(false)}>
                   <Sparkles className="h-4 w-4" />
                   Ask Minuto
+                </Link>
+                <Link href="/upload" className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground" onClick={() => setMobileOpen(false)}>
+                  <Upload className="h-4 w-4" />
+                  Аудио оруулах
                 </Link>
                 <Link
                   href="/meetings/new/live"

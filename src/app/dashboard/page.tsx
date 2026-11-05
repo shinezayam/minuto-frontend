@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Mic, Clock, Calendar, Trash2, FileText, Download } from "lucide-react";
+import { Mic, Clock, Calendar, Trash2, FileText, Download, Upload } from "lucide-react";
 import { Navbar } from "@/components/layout/navbar";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { api, friendlyError } from "@/lib/api";
 import { AuthGuard } from "@/components/layout/auth-guard";
@@ -67,10 +67,16 @@ function DashboardContent() {
               Таны бүх хурлын бичлэг болон бичвэр
             </p>
           </div>
-          <Button onClick={handleNewMeeting} className="gap-2">
-            <Mic className="h-4 w-4" />
-            Шинэ хурал
-          </Button>
+          <div className="flex items-center gap-2">
+            <Link href="/upload" className={buttonVariants({ variant: "outline", className: "gap-2" })}>
+              <Upload className="h-4 w-4" />
+              <span className="hidden sm:inline">Аудио оруулах</span>
+            </Link>
+            <Button onClick={handleNewMeeting} className="gap-2">
+              <Mic className="h-4 w-4" />
+              Шинэ хурал
+            </Button>
+          </div>
         </div>
 
         {loading ? (
@@ -195,12 +201,18 @@ function EmptyState({ onCreateNew }: { onCreateNew: () => void }) {
       </div>
       <h3 className="mt-4 text-lg font-semibold">Хурал алга байна</h3>
       <p className="mt-2 max-w-sm text-sm text-muted-foreground">
-        Эхний хурлаа бичиж, AI-р хурлын бичиг үүсгээрэй.
+        Эхний хурлаа бичих эсвэл бэлэн аудио бичлэгээ оруулаад AI-р хурлын тэмдэглэл үүсгээрэй.
       </p>
-      <Button onClick={onCreateNew} className="mt-6 gap-2">
-        <Mic className="h-4 w-4" />
-        Шинэ хурал эхлүүлэх
-      </Button>
+      <div className="mt-6 flex flex-col gap-2 sm:flex-row">
+        <Button onClick={onCreateNew} className="gap-2">
+          <Mic className="h-4 w-4" />
+          Шинэ хурал эхлүүлэх
+        </Button>
+        <Link href="/upload" className={buttonVariants({ variant: "outline", className: "gap-2" })}>
+          <Upload className="h-4 w-4" />
+          Аудио файл оруулах
+        </Link>
+      </div>
     </div>
   );
 }

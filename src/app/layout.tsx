@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Manrope } from "next/font/google";
 import "./globals.css";
 
 const inter = Inter({
@@ -7,10 +7,15 @@ const inter = Inter({
   subsets: ["latin", "cyrillic"],
 });
 
+const manrope = Manrope({
+  variable: "--font-display",
+  subsets: ["latin", "cyrillic"],
+});
+
 export const metadata: Metadata = {
-  title: "Mongolian AI Minutes — Хурлын AI бичигч",
+  title: "Minuto — Монгол хэлний хурлын AI туслах",
   description:
-    "Монгол хэлний хурлын AI туслах. Хурлаа бичиж, автомат хурал бичиг үүсгээрэй.",
+    "Хурлаа бичээд, шийдвэр, үүрэг даалгавар бүхий хурлын тэмдэглэлийг AI-аар автоматаар гаргаарай. Монгол хэлэнд зориулсан.",
 };
 
 export default function RootLayout({
@@ -19,7 +24,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="mn" className={`${inter.variable} h-full antialiased`}>
+    <html lang="mn" className={`${inter.variable} ${manrope.variable} h-full scroll-smooth antialiased`}>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );
