@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { AudioLoadingAnimation } from "@/components/ui/audio-loading-animation";
 import { api, friendlyError } from "@/lib/api";
+import { formatDuration } from "@/lib/audio-utils";
 import { AuthGuard } from "@/components/layout/auth-guard";
 import { ParticipantsInput } from "@/components/meetings/participants-input";
 
@@ -32,7 +33,9 @@ function UploadContent() {
   const [error, setError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [audioDuration, setAudioDuration] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const audioRef = useRef<HTMLAudioElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files?.[0];
@@ -52,9 +55,22 @@ function UploadContent() {
     }
     setFile(selected);
     setError(null);
+    setAudioDuration(null);
     if (!title) {
       setTitle(selected.name.replace(/\.[^/.]+$/, ""));
     }
+
+    // Get audio duration
+    const url = URL.createObjectURL(selected);
+    const audio = new Audio();
+    audio.src = url;
+    audio.onloadedmetadata = () => {
+      setAudioDuration(audio.duration);
+      URL.revokeObjectURL(url);
+    };
+    audio.onerror = () => {
+      URL.revokeObjectURL(url);
+    };
   };
 
   const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
@@ -113,6 +129,7 @@ function UploadContent() {
     setFile(null);
     setTitle("");
     setUploadProgress(0);
+    setAudioDuration(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -173,9 +190,15 @@ function UploadContent() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-medium">{file.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {(file.size / 1024 / 1024).toFixed(2)} MB
-                    </p>
+                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                      <span>{(file.size / 1024 / 1024).toFixed(2)} MB</span>
+                      {audioDuration !== null && (
+                        <span>• {formatDuration(audioDuration * 1000)}</span>
+                      )}
+                      {audioDuration === null && file.type.startsWith("audio/") && (
+                        <span className="animate-pulse">• Урт: ачаалж байна...</span>
+                      )}
+                    </div>
                   </div>
                   <Button
                     variant="ghost"
