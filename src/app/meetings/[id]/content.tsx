@@ -143,6 +143,9 @@ export default function MeetingDetailContent() {
   const [editingSegment, setEditingSegment] = useState<string | null>(null);
   const [segmentDraft, setSegmentDraft] = useState("");
   const [speakerDraft, setSpeakerDraft] = useState("");
+  const [summaryEditMode, setSummaryEditMode] = useState(false);
+  const [summaryDraft, setSummaryDraft] = useState("");
+  const [regeneratingSummary, setRegeneratingSummary] = useState(false);
   const [savingPeople, setSavingPeople] = useState(false);
   const [replaceOpen, setReplaceOpen] = useState(false);
   const [replaceOpts, setReplaceOpts] = useState<ReplaceOptions>({ find: "", replacement: "", wholeWord: true });
@@ -283,6 +286,46 @@ export default function MeetingDetailContent() {
     } catch (err) {
       setError(friendlyError(err));
     }
+  };
+
+  const handleRegenerateSummary = async () => {
+    if (!confirm("Товч агуулгыг дахин үүсгэх үү?")) return;
+    setRegeneratingSummary(true);
+    setError(null);
+    try {
+      const result = await api.regenerateSummary(meetingId);
+      if (minutes) {
+        setMinutes({ ...minutes, summary: result.summary });
+      }
+    } catch (err) {
+      setError(friendlyError(err));
+    } finally {
+      setRegeneratingSummary(false);
+    }
+  };
+
+  const startEditSummary = () => {
+    if (!minutes) return;
+    setSummaryEditMode(true);
+    setSummaryDraft(minutes.summary);
+  };
+
+  const cancelEditSummary = () => {
+    setSummaryEditMode(false);
+    setSummaryDraft("");
+  };
+
+  const saveSummary = async () => {
+    if (!minutes) return;
+    // TODO: Backend дээр summary update endpoint нэмэх хэрэгтэй
+    // Одоогоор зөвхөн frontend дээр хадгална (дахин ачаалхад алга болно)
+    setMinutes({ ...minutes, summary: summaryDraft });
+    setSummaryEditMode(false);
+  };
+
+  const copySummary = () => {
+    if (!minutes) return;
+    navigator.clipboard.writeText(minutes.summary);
   };
 
   const savePeople = async (reprocess: boolean) => {
@@ -461,17 +504,68 @@ export default function MeetingDetailContent() {
               <>
                 {/* Summary */}
                 <Card>
-                  <CardHeader>
+                  <CardHeader className="flex flex-row items-center justify-between">
                     <CardTitle className="flex items-center gap-2">
                       <FileText className="h-5 w-5" />
                       Товч агуулга
                     </CardTitle>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleRegenerateSummary}
+                        disabled={regeneratingSummary || isProcessing}
+                        className="gap-1.5"
+                      >
+                        {regeneratingSummary ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <RotateCcw className="h-4 w-4" />
+                        )}
+                        {regeneratingSummary ? "Үүсгэж байна..." : "Дахин үүсгэх"}
+                      </Button>
+                      {!summaryEditMode && (
+                        <>
+                          <Button variant="outline" size="sm" onClick={startEditSummary} disabled={isProcessing}>
+                            <Pencil className="h-4 w-4 mr-1" />
+                            Засварлах
+                          </Button>
+                          <Button variant="outline" size="sm" onClick={copySummary}>
+                            <CheckCircle className="h-4 w-4 mr-1" />
+                            Хуулах
+                          </Button>
+                        </>
+                      )}
+                    </div>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm leading-relaxed">{minutes.summary}</p>
-                    <p className="mt-3 text-xs text-muted-foreground">
-                      AI-аар автоматаар үүсгэсэн тул шийдвэр, хариуцагч, хугацааг бичвэртэй тулган шалгана уу.
-                    </p>
+                    {summaryEditMode ? (
+                      <div className="space-y-3">
+                        <textarea
+                          value={summaryDraft}
+                          onChange={(e) => setSummaryDraft(e.target.value)}
+                          rows={6}
+                          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                        />
+                        <div className="flex gap-2">
+                          <Button size="sm" onClick={saveSummary}>
+                            <Check className="h-4 w-4 mr-1" />
+                            Хадгалах
+                          </Button>
+                          <Button size="sm" variant="outline" onClick={cancelEditSummary}>
+                            <X className="h-4 w-4 mr-1" />
+                            Цуцлах
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <p className="text-sm leading-relaxed">{minutes.summary}</p>
+                        <p className="mt-3 text-xs text-muted-foreground">
+                          AI-аар автоматаар үүсгэсэн тул шийдвэр, хариуцагч, хугацааг бичвэртэй тулган шалгана уу.
+                        </p>
+                      </>
+                    )}
                   </CardContent>
                 </Card>
 

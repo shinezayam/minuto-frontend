@@ -183,6 +183,12 @@ export const api = {
     }
   },
 
+  /** Зөвхөн summary-г дахин үүсгэнэ */
+  regenerateSummary: (id: string) =>
+    request<{ meeting_id: string; summary: string }>(`/api/meetings/${id}/regenerate-summary`, {
+      method: "POST",
+    }),
+
   /** Ask Minuto — meetingId өгвөл зөвхөн тэр хурлаас, үгүй бол бүх хурлаас асууна */
   ask: (question: string, meetingId?: string, history: AskMessage[] = []) =>
     request<AskResponse>("/api/ask", {
