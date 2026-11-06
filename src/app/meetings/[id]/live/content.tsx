@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { AudioWaveform } from "@/components/ui/audio-waveform";
 import {
   isMeetingCaptureSupported,
   useAudioCapture,
@@ -370,6 +371,20 @@ export default function LiveMeetingContent() {
           </div>
         </div>
 
+        {/* Waveform visualization */}
+        {recordingActive && (
+          <Card className="mb-4 overflow-hidden">
+            <CardContent className="p-4">
+              <AudioWaveform
+                level={audio.audioLevel}
+                active={audio.status === "recording"}
+                height={48}
+                className="text-primary"
+              />
+            </CardContent>
+          </Card>
+        )}
+
         {recordingActive && (
           <div className="mb-4 flex flex-col gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-800 sm:flex-row sm:items-center sm:justify-between dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-200">
             <span className="flex items-center gap-2">
@@ -397,7 +412,7 @@ export default function LiveMeetingContent() {
         )}
 
         {/* Status cards */}
-        <div className="mb-4 grid gap-3 sm:grid-cols-3">
+        <div className="mb-4 grid gap-3 sm:grid-cols-4">
           <StatusCard
             label="Дуу"
             value={audio.status === "recording" ? "Идэвхтэй" : audio.status === "paused" ? "Зогссон" : "Бэлэн"}
@@ -409,19 +424,44 @@ export default function LiveMeetingContent() {
               )
             }
             extra={
-              <div className="mt-1.5 h-1.5 w-24 overflow-hidden rounded-full bg-muted">
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-green-400 via-yellow-400 to-red-500 transition-all duration-100"
-                  style={{ width: `${Math.max(2, audio.audioLevel * 100)}%` }}
-                />
+              <div className="mt-1.5 flex items-center gap-2">
+                <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-green-400 via-yellow-400 to-red-500 transition-all duration-100"
+                    style={{ width: `${Math.max(2, audio.audioLevel * 100)}%` }}
+                  />
+                </div>
+                <span className="text-xs tabular-nums text-muted-foreground">
+                  {Math.round(audio.audioLevel * 100)}%
+                </span>
               </div>
             }
           />
-          <StatusCard label="Илгээсэн хэсэг" value={`${chunksSent}`} icon={<Wifi className="h-4 w-4 text-primary" />} />
+          <StatusCard
+            label="Илгээсэн"
+            value={`${chunksSent}`}
+            icon={<Wifi className="h-4 w-4 text-primary" />}
+            extra={<div className="mt-1 text-xs text-muted-foreground">хэсэг</div>}
+          />
           <StatusCard
             label="Баталгаажсан"
             value={`${ws.ackedCount}`}
             icon={<CheckCircle2 className="h-4 w-4 text-green-600" />}
+            extra={
+              <div className="mt-1 text-xs text-muted-foreground">
+                {chunksSent > 0 ? `${Math.round((ws.ackedCount / chunksSent) * 100)}%` : "—"}
+              </div>
+            }
+          />
+          <StatusCard
+            label="Цаг"
+            value={formatDuration(elapsed)}
+            icon={<span className="text-lg">⏱️</span>}
+            extra={
+              <div className="mt-1 text-xs text-muted-foreground">
+                {audio.status === "paused" ? "Зогссон" : "Бичиж байна"}
+              </div>
+            }
           />
         </div>
 
