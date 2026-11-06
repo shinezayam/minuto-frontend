@@ -29,9 +29,9 @@ interface SidebarProps {
 }
 
 const NAV_ITEMS = [
-  { href: "/dashboard", label: "Хурлууд", icon: LayoutDashboard },
+  { href: "/dashboard", label: "Нүүр", icon: LayoutDashboard },
   { href: "/meetings/new/live", label: "Шинэ хурал", icon: Mic },
-  { href: "/meetings", label: "Миний хурлууд", icon: Folder },
+  { href: "/meetings", label: "Бүх хурал", icon: Folder },
   { href: "/actions", label: "Даалгаврууд", icon: CheckSquare },
   { href: "/ask", label: "AI хайлт", icon: Search },
   { href: "/templates", label: "Загварууд", icon: FileText },
@@ -55,10 +55,21 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
   };
 
   const isActive = (href: string) => {
+    // Dashboard: зөвхөн /dashboard эсвэл /
     if (href === "/dashboard") {
       return pathname === "/dashboard" || pathname === "/";
     }
-    return pathname.startsWith(href);
+    // /meetings/new/live - exact match
+    if (href === "/meetings/new/live") {
+      return pathname === "/meetings/new/live" || pathname.startsWith("/meetings/new/live");
+    }
+    // /meetings - зөвхөн /meetings эсвэл /meetings/[id] (гэхдээ /meetings/new биш)
+    if (href === "/meetings") {
+      return pathname === "/meetings" || 
+        (pathname.startsWith("/meetings/") && !pathname.startsWith("/meetings/new"));
+    }
+    // Бусад - exact match эсвэл startsWith
+    return pathname === href || pathname.startsWith(href + "/");
   };
 
   return (

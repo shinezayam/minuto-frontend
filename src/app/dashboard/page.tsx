@@ -270,15 +270,21 @@ function DashboardContent() {
               </Button>
               <Button
                 variant={showArchived ? "default" : "outline"}
-                size="icon"
+                size="sm"
                 onClick={() => setShowArchived(!showArchived)}
-                title={showArchived ? "Актив хурлууд" : "Архив харуулах"}
-                className="rounded-full"
+                title={showArchived ? "Идэвхтэй хурлууд руу буцах" : "Архивласан хурлуудыг харуулах"}
+                className="rounded-full gap-1.5"
               >
                 {showArchived ? (
-                  <ArchiveRestore className="h-4 w-4" />
+                  <>
+                    <ArchiveRestore className="h-4 w-4" />
+                    <span className="text-xs">Идэвхтэй</span>
+                  </>
                 ) : (
-                  <Archive className="h-4 w-4" />
+                  <>
+                    <Archive className="h-4 w-4" />
+                    <span className="text-xs">Архив</span>
+                  </>
                 )}
               </Button>
               <div className="flex items-center rounded-full border border-input">
@@ -507,17 +513,19 @@ function MeetingCard({
           </Button>
           <Button
             variant="ghost"
-            size="icon"
-            className="h-8 w-8 shrink-0 rounded-full text-muted-foreground hover:text-foreground"
-            title="Архивлах"
+            size="sm"
+            className="h-8 shrink-0 rounded-full text-muted-foreground hover:text-foreground gap-1"
+            title="Архивлах - Хурлыг устгахгүйгээр жагсаалтаас нуух"
             onClick={onArchive}
           >
             <Archive className="h-4 w-4" />
+            <span className="text-xs">Архив</span>
           </Button>
           <Button
             variant="ghost"
             size="icon"
             className="h-8 w-8 shrink-0 rounded-full text-muted-foreground hover:text-destructive"
+            title="Бүрмөсөн устгах"
             onClick={onDelete}
           >
             <Trash2 className="h-4 w-4" />
@@ -643,17 +651,19 @@ function MeetingListItem({
         )}
         <Button
           variant="ghost"
-          size="icon"
-          className="h-8 w-8 shrink-0 rounded-full text-muted-foreground hover:text-foreground"
-          title="Архивлах"
+          size="sm"
+          className="h-8 shrink-0 rounded-full text-muted-foreground hover:text-foreground gap-1"
+          title="Архивлах - Хурлыг устгахгүйгээр жагсаалтаас нуух"
           onClick={onArchive}
         >
           <Archive className="h-4 w-4" />
+          <span className="text-xs">Архив</span>
         </Button>
         <Button
           variant="ghost"
           size="icon"
           className="h-8 w-8 shrink-0 rounded-full text-muted-foreground hover:text-destructive"
+          title="Бүрмөсөн устгах"
           onClick={onDelete}
         >
           <Trash2 className="h-4 w-4" />
