@@ -32,6 +32,13 @@ export interface Contact {
   name: string;
 }
 
+/** Хэрэглэгчийн толь бичгийн үг. wrong байвал шинэ бичвэрт автоматаар term болгож засна. */
+export interface VocabularyTerm {
+  id: string;
+  term: string;
+  wrong?: string | null;
+}
+
 /** Сегмент доторх нэг хүний яриа */
 export interface SpeakerTurn {
   /** "Яригч 1" эсвэл тодорхой бол нэр */

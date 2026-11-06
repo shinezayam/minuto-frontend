@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useRef, useState, type ReactNode } from "react";
+import Link from "next/link";
 import { Check, Loader2, Replace, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -81,9 +82,10 @@ export function TranscriptReplacePanel({
   onReplaced: (segments: TranscriptSegment[], minutesChanged: boolean) => void;
 }) {
   const [includeMinutes, setIncludeMinutes] = useState(true);
+  const [remember, setRemember] = useState(true);
   const [saving, setSaving] = useState(false);
   // forFind: мессеж аль хайлтад хамаарах — хайх үг солигдоход хуучин мессеж нуугдана
-  const [result, setResult] = useState<{ ok: boolean; text: string; forFind: string } | null>(null);
+  const [result, setResult] = useState<{ ok: boolean; text: string; forFind: string; remembered?: boolean } | null>(null);
   const replaceRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -107,6 +109,7 @@ export function TranscriptReplacePanel({
         replace: replacement.trim(),
         whole_word: options.wholeWord,
         include_minutes: hasMinutes && includeMinutes,
+        remember,
       });
       onReplaced(res.segments, res.minutes_replaced > 0);
       setResult({
@@ -115,7 +118,9 @@ export function TranscriptReplacePanel({
         text:
           `${res.replaced} газар засагдлаа` +
           (res.minutes_replaced > 0 ? `, хурлын бичигт ${res.minutes_replaced} газар` : "") +
-          ".",
+          "." +
+          (res.remembered ? " Дараагийн хурлуудад автоматаар засагдана." : ""),
+        remembered: !!res.remembered,
       });
       onOptionsChange({ ...options, find: "", replacement: "" });
     } catch (err) {
@@ -179,6 +184,15 @@ export function TranscriptReplacePanel({
             Хурлын бичигт мөн засах
           </label>
         )}
+        <label className="flex items-center gap-2" title="Дараагийн хурлуудад энэ үгийг автоматаар засна">
+          <input
+            type="checkbox"
+            checked={remember}
+            onChange={(e) => setRemember(e.target.checked)}
+            className="h-4 w-4 rounded border-border"
+          />
+          Толь бичигт хадгалах
+        </label>
       </div>
       <div className="flex flex-wrap items-center gap-3">
         <Button type="submit" size="sm" disabled={disabled || saving || !matcher || count === 0 || unchanged}>
@@ -194,6 +208,11 @@ export function TranscriptReplacePanel({
           <span className={`inline-flex items-center gap-1 text-xs ${message.ok ? "text-green-600 dark:text-green-400" : "text-destructive"}`}>
             {message.ok && <Check className="h-3.5 w-3.5" />}
             {message.text}
+            {message.remembered && (
+              <Link href="/settings" className="ml-1 underline underline-offset-2 hover:no-underline">
+                Толь бичиг
+              </Link>
+            )}
           </span>
         )}
       </div>

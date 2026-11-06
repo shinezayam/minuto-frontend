@@ -6,6 +6,7 @@ import type {
   MeetingListResponse,
   MeetingMinutes,
   TranscriptSegment,
+  VocabularyTerm,
 } from "./types";
 import { getToken, handleUnauthorized, type AuthUser } from "./auth";
 
@@ -109,6 +110,18 @@ export const api = {
 
   deleteContact: (id: string) => request<void>(`/api/contacts/${id}`, { method: "DELETE" }),
 
+  // ---------- Толь бичиг ----------
+
+  listVocabulary: () => request<{ terms: VocabularyTerm[] }>("/api/vocabulary"),
+
+  addVocabulary: (term: string, wrong?: string) =>
+    request<VocabularyTerm>("/api/vocabulary", {
+      method: "POST",
+      body: JSON.stringify({ term, wrong: wrong || null }),
+    }),
+
+  deleteVocabulary: (id: string) => request<void>(`/api/vocabulary/${id}`, { method: "DELETE" }),
+
   // ---------- Хурал ----------
   createMeeting: (title?: string, participants: string[] = []) =>
     request<Meeting>("/api/meetings", {
@@ -166,9 +179,23 @@ export const api = {
   /** Буруу танигдсан үгийг бичвэр (include_minutes үед хурлын бичиг)-ийн бүх газарт засна */
   replaceInTranscript: (
     id: string,
-    body: { find: string; replace: string; whole_word?: boolean; case_sensitive?: boolean; include_minutes?: boolean },
+    body: {
+      find: string;
+      replace: string;
+      whole_word?: boolean;
+      case_sensitive?: boolean;
+      include_minutes?: boolean;
+      /** Засварыг толь бичигт хадгалж, дараагийн хурлуудад автоматаар засна (default: true) */
+      remember?: boolean;
+    },
   ) =>
-    request<{ meeting_id: string; replaced: number; minutes_replaced: number; segments: TranscriptSegment[] }>(
+    request<{
+      meeting_id: string;
+      replaced: number;
+      minutes_replaced: number;
+      remembered?: boolean;
+      segments: TranscriptSegment[];
+    }>(
       `/api/meetings/${id}/transcript/replace`,
       { method: "POST", body: JSON.stringify(body) },
     ),
