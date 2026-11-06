@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Mic, Clock, Calendar, Trash2, FileText, Download, Upload, Search, Filter, SortAsc, SortDesc, BarChart3 } from "lucide-react";
+import { Mic, Clock, Calendar, Trash2, FileText, Download, Upload, Search, Filter, SortAsc, SortDesc, BarChart3, Pencil } from "lucide-react";
 import { AppShell } from "@/components/layout/app-shell";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -98,6 +98,15 @@ function DashboardContent() {
       setMeetings((prev) => prev.filter((m) => m.id !== id));
     } catch {
       alert("Устгахад алдаа гарлаа");
+    }
+  };
+
+  const handleRename = async (id: string, newTitle: string) => {
+    try {
+      await api.updateMeeting(id, { title: newTitle });
+      setMeetings((prev) => prev.map((m) => (m.id === id ? { ...m, title: newTitle } : m)));
+    } catch {
+      alert("Нэр солиход алдаа гарлаа");
     }
   };
 
@@ -280,6 +289,7 @@ function DashboardContent() {
                 key={meeting.id}
                 meeting={meeting}
                 onDelete={() => handleDelete(meeting.id)}
+                onRename={(newTitle) => handleRename(meeting.id, newTitle)}
               />
             ))}
           </div>
@@ -293,10 +303,27 @@ function DashboardContent() {
 function MeetingCard({
   meeting,
   onDelete,
+  onRename,
 }: {
   meeting: Meeting;
   onDelete: () => void;
+  onRename: (newTitle: string) => void;
 }) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editTitle, setEditTitle] = useState(meeting.title);
+
+  const handleSave = () => {
+    if (editTitle.trim() && editTitle !== meeting.title) {
+      onRename(editTitle.trim());
+    }
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    setEditTitle(meeting.title);
+    setIsEditing(false);
+  };
+
   const statusColors: Record<string, string> = {
     draft: "bg-muted text-muted-foreground",
     recording: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
@@ -332,9 +359,30 @@ function MeetingCard({
       <CardContent className="p-5">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
-            <h3 className="truncate font-display text-lg font-bold leading-tight group-hover:text-primary transition-colors">
-              {meeting.title}
-            </h3>
+            {isEditing ? (
+              <div className="flex items-center gap-2">
+                <Input
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleSave();
+                    if (e.key === "Escape") handleCancel();
+                  }}
+                  className="h-8 text-lg font-bold"
+                  autoFocus
+                />
+                <Button size="sm" variant="ghost" onClick={handleSave} className="h-8 px-2">
+                  Хадгалах
+                </Button>
+                <Button size="sm" variant="ghost" onClick={handleCancel} className="h-8 px-2">
+                  Цуцлах
+                </Button>
+              </div>
+            ) : (
+              <h3 className="truncate font-display text-lg font-bold leading-tight group-hover:text-primary transition-colors">
+                {meeting.title}
+              </h3>
+            )}
             <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
               <span className="flex items-center gap-1">
                 <Calendar className="h-3 w-3" />
@@ -377,6 +425,15 @@ function MeetingCard({
               <Download className="h-4 w-4" />
             </Button>
           )}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 shrink-0 rounded-full text-muted-foreground hover:text-foreground"
+            title="Нэр солих"
+            onClick={() => setIsEditing(true)}
+          >
+            <Pencil className="h-4 w-4" />
+          </Button>
           <Button
             variant="ghost"
             size="icon"
