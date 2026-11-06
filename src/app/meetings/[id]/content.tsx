@@ -24,7 +24,8 @@ import { AppShell } from "@/components/layout/app-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { AudioLoadingAnimation } from "@/components/ui/audio-loading-animation";
+import { LoadingState } from "@/components/ui/loading-state";
+import { ErrorState } from "@/components/ui/error-state";
 import { AskPanel, formatTimestamp } from "@/components/ask/ask-panel";
 import { api, friendlyError, friendlyErrorText } from "@/lib/api";
 import type { AskCitation, Meeting, MeetingMinutes, TranscriptSegment } from "@/lib/types";
@@ -257,10 +258,7 @@ export default function MeetingDetailContent() {
   if (loading) {
     return (
       <AppShell>
-        <main className="flex min-h-[60vh] flex-col items-center justify-center gap-4">
-          <AudioLoadingAnimation className="scale-150" />
-          <p className="text-muted-foreground">Уншиж байна...</p>
-        </main>
+        <LoadingState />
       </AppShell>
     );
   }
@@ -269,7 +267,7 @@ export default function MeetingDetailContent() {
     return (
       <AppShell>
         <main className="mx-auto max-w-5xl px-4 py-8">
-          <div className="rounded-lg bg-destructive/10 p-4 text-destructive">{error}</div>
+          <ErrorState message={error} />
         </main>
       </AppShell>
     );

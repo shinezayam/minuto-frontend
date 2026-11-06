@@ -8,6 +8,8 @@ import { AppShell } from "@/components/layout/app-shell";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { ErrorState } from "@/components/ui/error-state";
+import { EmptyState } from "@/components/ui/empty-state";
 import { api, friendlyError } from "@/lib/api";
 import { AuthGuard } from "@/components/layout/auth-guard";
 import { formatDate, formatDuration } from "@/lib/audio-utils";
@@ -249,29 +251,28 @@ function DashboardContent() {
             ))}
           </div>
         ) : loadError ? (
-          <div className="mt-8 rounded-lg bg-destructive/10 p-4 text-sm text-destructive">{loadError}</div>
+          <ErrorState message={loadError} className="mt-8" />
         ) : meetings.length === 0 ? (
-          <EmptyState onCreateNew={handleNewMeeting} />
+          <DashboardEmptyState onCreateNew={handleNewMeeting} />
         ) : filteredAndSortedMeetings.length === 0 ? (
-          <div className="mt-8 flex flex-col items-center justify-center py-12 text-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
-              <Search className="h-8 w-8 text-muted-foreground" />
-            </div>
-            <h3 className="mt-4 font-display text-lg font-bold">Хурал олдсонгүй</h3>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Хайлтын өөр түлхүүр үг эсвэл шүүлтүүр ашиглана уу
-            </p>
-            <Button 
-              variant="outline" 
-              className="mt-4 rounded-full"
-              onClick={() => {
-                setSearchQuery("");
-                setStatusFilter("all");
-              }}
-            >
-              Шүүлтүүр цэвэрлэх
-            </Button>
-          </div>
+          <EmptyState
+            icon={Search}
+            title="Хурал олдсонгүй"
+            description="Хайлтын өөр түлхүүр үг эсвэл шүүлтүүр ашиглана уу"
+            action={
+              <Button
+                variant="outline"
+                className="rounded-full"
+                onClick={() => {
+                  setSearchQuery("");
+                  setStatusFilter("all");
+                }}
+              >
+                Шүүлтүүр цэвэрлэх
+              </Button>
+            }
+            className="mt-8"
+          />
         ) : (
           <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {filteredAndSortedMeetings.map((meeting) => (
@@ -390,7 +391,7 @@ function MeetingCard({
   );
 }
 
-function EmptyState({ onCreateNew }: { onCreateNew: () => void }) {
+function DashboardEmptyState({ onCreateNew }: { onCreateNew: () => void }) {
   return (
     <div className="mt-16 flex flex-col items-center justify-center text-center">
       <div className="relative">
