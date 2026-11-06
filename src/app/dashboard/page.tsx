@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Mic, Clock, Calendar, Trash2, FileText, Download, Upload, Search, Filter, SortAsc, SortDesc, BarChart3, Pencil, LayoutGrid, List } from "lucide-react";
+import { Mic, Clock, Calendar, Trash2, FileText, Download, Upload, Search, Filter, SortAsc, SortDesc, BarChart3, Pencil, LayoutGrid, List, Archive, ArchiveRestore } from "lucide-react";
 import { AppShell } from "@/components/layout/app-shell";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -29,14 +29,15 @@ function DashboardContent() {
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
+  const [showArchived, setShowArchived] = useState(false);
 
   useEffect(() => {
     api
-      .listMeetings()
+      .listMeetings(showArchived)
       .then((res) => setMeetings(res.meetings))
       .catch((err) => setLoadError(friendlyError(err)))
       .finally(() => setLoading(false));
-  }, []);
+  }, [showArchived]);
 
   // Боловсруулж буй хурал байвал төлөвийг 5 секунд тутам шинэчилнэ
   const anyProcessing = meetings.some((m) => m.status === "processing");
@@ -109,6 +110,24 @@ function DashboardContent() {
       setMeetings((prev) => prev.map((m) => (m.id === id ? { ...m, title: newTitle } : m)));
     } catch {
       alert("Нэр солиход алдаа гарлаа");
+    }
+  };
+
+  const handleArchive = async (id: string) => {
+    try {
+      await api.archiveMeeting(id);
+      setMeetings((prev) => prev.filter((m) => m.id !== id));
+    } catch {
+      alert("Архивлахад алдаа гарлаа");
+    }
+  };
+
+  const handleUnarchive = async (id: string) => {
+    try {
+      await api.unarchiveMeeting(id);
+      setMeetings((prev) => prev.filter((m) => m.id !== id));
+    } catch {
+      alert("Архиваас гаргахад алдаа гарлаа");
     }
   };
 
@@ -249,6 +268,19 @@ function DashboardContent() {
                   <SortDesc className="h-4 w-4" />
                 )}
               </Button>
+              <Button
+                variant={showArchived ? "default" : "outline"}
+                size="icon"
+                onClick={() => setShowArchived(!showArchived)}
+                title={showArchived ? "Актив хурлууд" : "Архив харуулах"}
+                className="rounded-full"
+              >
+                {showArchived ? (
+                  <ArchiveRestore className="h-4 w-4" />
+                ) : (
+                  <Archive className="h-4 w-4" />
+                )}
+              </Button>
               <div className="flex items-center rounded-full border border-input">
                 <Button
                   variant={viewMode === "grid" ? "default" : "ghost"}
@@ -313,6 +345,7 @@ function DashboardContent() {
                   meeting={meeting}
                   onDelete={() => handleDelete(meeting.id)}
                   onRename={(newTitle) => handleRename(meeting.id, newTitle)}
+                  onArchive={() => handleArchive(meeting.id)}
                 />
               ))}
             </div>
@@ -324,6 +357,7 @@ function DashboardContent() {
                   meeting={meeting}
                   onDelete={() => handleDelete(meeting.id)}
                   onRename={(newTitle) => handleRename(meeting.id, newTitle)}
+                  onArchive={() => handleArchive(meeting.id)}
                 />
               ))}
             </div>
@@ -339,10 +373,12 @@ function MeetingCard({
   meeting,
   onDelete,
   onRename,
+  onArchive,
 }: {
   meeting: Meeting;
   onDelete: () => void;
   onRename: (newTitle: string) => void;
+  onArchive: () => void;
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(meeting.title);
@@ -472,6 +508,15 @@ function MeetingCard({
           <Button
             variant="ghost"
             size="icon"
+            className="h-8 w-8 shrink-0 rounded-full text-muted-foreground hover:text-foreground"
+            title="Архивлах"
+            onClick={onArchive}
+          >
+            <Archive className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
             className="h-8 w-8 shrink-0 rounded-full text-muted-foreground hover:text-destructive"
             onClick={onDelete}
           >
@@ -487,10 +532,12 @@ function MeetingListItem({
   meeting,
   onDelete,
   onRename,
+  onArchive,
 }: {
   meeting: Meeting;
   onDelete: () => void;
   onRename: (newTitle: string) => void;
+  onArchive: () => void;
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(meeting.title);
@@ -594,6 +641,15 @@ function MeetingListItem({
             <Download className="h-4 w-4" />
           </Button>
         )}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 shrink-0 rounded-full text-muted-foreground hover:text-foreground"
+          title="Архивлах"
+          onClick={onArchive}
+        >
+          <Archive className="h-4 w-4" />
+        </Button>
         <Button
           variant="ghost"
           size="icon"

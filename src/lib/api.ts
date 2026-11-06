@@ -116,7 +116,7 @@ export const api = {
       body: JSON.stringify({ title: title || "Шинэ хурал", participants }),
     }),
 
-  listMeetings: () => request<MeetingListResponse>("/api/meetings"),
+  listMeetings: (includeArchived: boolean = false) => request<MeetingListResponse>(`/api/meetings?include_archived=${includeArchived}`),
 
   getMeeting: (id: string) => request<Meeting>(`/api/meetings/${id}`),
 
@@ -135,6 +135,10 @@ export const api = {
   endMeeting: (id: string) => request<Meeting>(`/api/meetings/${id}/end`, { method: "POST" }),
 
   deleteMeeting: (id: string) => request<void>(`/api/meetings/${id}`, { method: "DELETE" }),
+
+  archiveMeeting: (id: string) => request<Meeting>(`/api/meetings/${id}/archive`, { method: "POST" }),
+
+  unarchiveMeeting: (id: string) => request<Meeting>(`/api/meetings/${id}/unarchive`, { method: "POST" }),
 
   uploadAudio: (id: string, file: File) => {
     const form = new FormData();
