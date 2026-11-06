@@ -152,6 +152,16 @@ export const api = {
   getTranscript: (id: string) =>
     request<{ meeting_id: string; segments: TranscriptSegment[] }>(`/api/meetings/${id}/transcript`),
 
+  /** Буруу танигдсан үгийг бичвэр (include_minutes үед хурлын бичиг)-ийн бүх газарт засна */
+  replaceInTranscript: (
+    id: string,
+    body: { find: string; replace: string; whole_word?: boolean; case_sensitive?: boolean; include_minutes?: boolean },
+  ) =>
+    request<{ meeting_id: string; replaced: number; minutes_replaced: number; segments: TranscriptSegment[] }>(
+      `/api/meetings/${id}/transcript/replace`,
+      { method: "POST", body: JSON.stringify(body) },
+    ),
+
   /** Хурлын бичиг үүсээгүй бол null */
   getMinutes: async (id: string): Promise<MeetingMinutes | null> => {
     try {

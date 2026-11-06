@@ -20,6 +20,7 @@ import {
   UserRound,
 } from "lucide-react";
 import { ParticipantsInput } from "@/components/meetings/participants-input";
+import { Highlight, TranscriptReplacePanel, buildMatcher, type ReplaceOptions } from "@/components/meetings/transcript-replace";
 import { AppShell } from "@/components/layout/app-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -135,6 +136,9 @@ export default function MeetingDetailContent() {
   const [editingPeople, setEditingPeople] = useState(false);
   const [peopleDraft, setPeopleDraft] = useState<string[]>([]);
   const [savingPeople, setSavingPeople] = useState(false);
+  const [replaceOpen, setReplaceOpen] = useState(false);
+  const [replaceOpts, setReplaceOpts] = useState<ReplaceOptions>({ find: "", replacement: "", wholeWord: true });
+  const [replaceFocus, setReplaceFocus] = useState(0);
   const audioRef = useRef<HTMLAudioElement>(null);
   const searchParams = useSearchParams();
   // Боловсруулалт эхлүүлэх үеийн алдаа (upload/live хуудаснаас ?error=... гэж дамжина)
@@ -144,6 +148,17 @@ export default function MeetingDetailContent() {
   const linkSeg = searchParams.get("seg");
 
   const segmentsById = new Map(transcript.map((s) => [s.id, s]));
+  const replaceMatcher = replaceOpen ? buildMatcher(replaceOpts) : null;
+
+  /** Бичвэрээс үг сонгоход (давхар товшиж/чирж) засах самбарыг нээж тэр үгийг бөглөнө */
+  const handleTranscriptSelect = () => {
+    const text = window.getSelection()?.toString().trim() ?? "";
+    if (!text || text.length > 200 || text.includes("\n")) return;
+    setReplaceOpen(true);
+    // "Зөв үг"-ийг сонгосон үгээр бөглөнө — хэрэглэгч зөвхөн буруу үсгийг засна
+    setReplaceOpts((o) => ({ ...o, find: text, replacement: text }));
+    setReplaceFocus((n) => n + 1);
+  };
 
   // Яригчдын дараалал (анх ярьсан дарааллаар) — өнгө оноохад
   const speakerOrder: string[] = [];
@@ -580,12 +595,37 @@ export default function MeetingDetailContent() {
 
           <TabsContent value="transcript">
             <Card>
-              <CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between gap-2">
                 <CardTitle>Бичвэр</CardTitle>
+                {transcript.length > 0 && !replaceOpen && (
+                  <Button variant="outline" size="sm" onClick={() => setReplaceOpen(true)} disabled={isProcessing}>
+                    <PenLine />
+                    Үг засах
+                  </Button>
+                )}
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-3">
+                {replaceOpen && transcript.length > 0 && (
+                  <TranscriptReplacePanel
+                    meetingId={meetingId}
+                    segments={transcript}
+                    hasMinutes={!!minutes}
+                    disabled={isProcessing}
+                    focusSignal={replaceFocus}
+                    options={replaceOpts}
+                    onOptionsChange={setReplaceOpts}
+                    onClose={() => {
+                      setReplaceOpen(false);
+                      setReplaceOpts((o) => ({ ...o, find: "", replacement: "" }));
+                    }}
+                    onReplaced={(segs, minutesChanged) => {
+                      setTranscript(segs);
+                      if (minutesChanged) api.getMinutes(meetingId).then(setMinutes).catch(() => {});
+                    }}
+                  />
+                )}
                 {transcript.length > 0 ? (
-                  <div className="space-y-3">
+                  <div className="space-y-3" onMouseUp={replaceOpen ? handleTranscriptSelect : undefined} onDoubleClick={handleTranscriptSelect}>
                     {transcript.map((segment) => (
                       <div
                         key={segment.id}
@@ -613,12 +653,14 @@ export default function MeetingDetailContent() {
                                     {turn.speaker}:
                                   </span>
                                 )}
-                                {turn.text}
+                                <Highlight text={turn.text} matcher={replaceMatcher} />
                               </p>
                             ))}
                           </div>
                         ) : (
-                          <p className="whitespace-pre-line text-sm">{segment.text}</p>
+                          <p className="whitespace-pre-line text-sm">
+                            <Highlight text={segment.text} matcher={replaceMatcher} />
+                          </p>
                         )}
                       </div>
                     ))}
