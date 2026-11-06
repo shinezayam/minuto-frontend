@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Mic, Clock, Calendar, Trash2, FileText, Download, Upload, Search, Filter, SortAsc, SortDesc, BarChart3, Pencil } from "lucide-react";
+import { Mic, Clock, Calendar, Trash2, FileText, Download, Upload, Search, Filter, SortAsc, SortDesc, BarChart3, Pencil, LayoutGrid, List } from "lucide-react";
 import { AppShell } from "@/components/layout/app-shell";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -17,6 +17,7 @@ import type { Meeting } from "@/lib/types";
 
 type SortField = "date" | "title" | "duration";
 type SortOrder = "asc" | "desc";
+type ViewMode = "grid" | "list";
 
 function DashboardContent() {
   const router = useRouter();
@@ -27,6 +28,7 @@ function DashboardContent() {
   const [sortField, setSortField] = useState<SortField>("date");
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [viewMode, setViewMode] = useState<ViewMode>("grid");
 
   useEffect(() => {
     api
@@ -247,6 +249,26 @@ function DashboardContent() {
                   <SortDesc className="h-4 w-4" />
                 )}
               </Button>
+              <div className="flex items-center rounded-full border border-input">
+                <Button
+                  variant={viewMode === "grid" ? "default" : "ghost"}
+                  size="icon"
+                  onClick={() => setViewMode("grid")}
+                  title="Grid view"
+                  className="h-9 w-9 rounded-full"
+                >
+                  <LayoutGrid className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={viewMode === "list" ? "default" : "ghost"}
+                  size="icon"
+                  onClick={() => setViewMode("list")}
+                  title="List view"
+                  className="h-9 w-9 rounded-full"
+                >
+                  <List className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </div>
         )}
@@ -283,16 +305,29 @@ function DashboardContent() {
             className="mt-8"
           />
         ) : (
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {filteredAndSortedMeetings.map((meeting) => (
-              <MeetingCard
-                key={meeting.id}
-                meeting={meeting}
-                onDelete={() => handleDelete(meeting.id)}
-                onRename={(newTitle) => handleRename(meeting.id, newTitle)}
-              />
-            ))}
-          </div>
+          viewMode === "grid" ? (
+            <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {filteredAndSortedMeetings.map((meeting) => (
+                <MeetingCard
+                  key={meeting.id}
+                  meeting={meeting}
+                  onDelete={() => handleDelete(meeting.id)}
+                  onRename={(newTitle) => handleRename(meeting.id, newTitle)}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="mt-8 flex flex-col gap-2">
+              {filteredAndSortedMeetings.map((meeting) => (
+                <MeetingListItem
+                  key={meeting.id}
+                  meeting={meeting}
+                  onDelete={() => handleDelete(meeting.id)}
+                  onRename={(newTitle) => handleRename(meeting.id, newTitle)}
+                />
+              ))}
+            </div>
+          )
         )}
         </main>
       </AppShell>
@@ -445,6 +480,130 @@ function MeetingCard({
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+function MeetingListItem({
+  meeting,
+  onDelete,
+  onRename,
+}: {
+  meeting: Meeting;
+  onDelete: () => void;
+  onRename: (newTitle: string) => void;
+}) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editTitle, setEditTitle] = useState(meeting.title);
+
+  const handleSave = () => {
+    if (editTitle.trim() && editTitle !== meeting.title) {
+      onRename(editTitle.trim());
+    }
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    setEditTitle(meeting.title);
+    setIsEditing(false);
+  };
+
+  const statusColors: Record<string, string> = {
+    draft: "bg-muted text-muted-foreground",
+    recording: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+    paused: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
+    completed: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
+    processing: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+    failed: "bg-destructive/10 text-destructive",
+  };
+
+  const statusLabels: Record<string, string> = {
+    draft: "Ноорог",
+    recording: "Бичиж байна",
+    paused: "Зогссон",
+    completed: "Дууссан",
+    processing: "Боловсруулж байна",
+    failed: "Алдаа",
+  };
+
+  return (
+    <div className="flex items-center gap-4 rounded-xl border border-border bg-card p-4 transition-all hover:shadow-md">
+      <div className="min-w-0 flex-1">
+        {isEditing ? (
+          <div className="flex items-center gap-2">
+            <Input
+              value={editTitle}
+              onChange={(e) => setEditTitle(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleSave();
+                if (e.key === "Escape") handleCancel();
+              }}
+              className="h-8 font-bold"
+              autoFocus
+            />
+            <Button size="sm" variant="ghost" onClick={handleSave} className="h-8 px-2">
+              Хадгалах
+            </Button>
+            <Button size="sm" variant="ghost" onClick={handleCancel} className="h-8 px-2">
+              Цуцлах
+            </Button>
+          </div>
+        ) : (
+          <Link
+            href={meeting.status === "recording" || meeting.status === "paused" ? `/meetings/${meeting.id}/live` : `/meetings/${meeting.id}`}
+            className="font-display text-base font-bold hover:text-primary transition-colors"
+          >
+            {meeting.title}
+          </Link>
+        )}
+        <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
+          <span className="flex items-center gap-1">
+            <Calendar className="h-3 w-3" />
+            {formatDate(meeting.created_at)}
+          </span>
+          {meeting.duration_ms > 0 && (
+            <span className="flex items-center gap-1">
+              <Clock className="h-3 w-3" />
+              {formatDuration(meeting.duration_ms)}
+            </span>
+          )}
+        </div>
+      </div>
+      <span
+        className={`shrink-0 inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${statusColors[meeting.status] || "bg-muted"}`}
+      >
+        {statusLabels[meeting.status] || meeting.status}
+      </span>
+      <div className="flex items-center gap-1">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 shrink-0 rounded-full text-muted-foreground hover:text-foreground"
+          title="Нэр солих"
+          onClick={() => setIsEditing(true)}
+        >
+          <Pencil className="h-4 w-4" />
+        </Button>
+        {meeting.status === "completed" && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 shrink-0 rounded-full"
+            title="DOCX татах"
+            onClick={() => api.downloadDocx(meeting.id).catch((err) => alert(friendlyError(err)))}
+          >
+            <Download className="h-4 w-4" />
+          </Button>
+        )}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 shrink-0 rounded-full text-muted-foreground hover:text-destructive"
+          onClick={onDelete}
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
   );
 }
 
