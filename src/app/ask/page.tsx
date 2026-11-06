@@ -1,6 +1,6 @@
 "use client";
 
-import { Navbar } from "@/components/layout/navbar";
+import { AppShell } from "@/components/layout/app-shell";
 import { AuthGuard } from "@/components/layout/auth-guard";
 import { AskPanel } from "@/components/ask/ask-panel";
 
@@ -14,10 +14,11 @@ const EXAMPLES = [
 export default function AskPage() {
   return (
     <AuthGuard>
-      <Navbar />
-      <main className="mx-auto flex h-[calc(100dvh-4rem)] max-w-3xl flex-col px-4 py-6">
-        <AskPanel examples={EXAMPLES} className="min-h-0 flex-1" />
-      </main>
+      <AppShell>
+        <main className="mx-auto flex h-[calc(100dvh-4rem)] max-w-3xl flex-col px-4 py-6">
+          <AskPanel examples={EXAMPLES} className="min-h-0 flex-1" />
+        </main>
+      </AppShell>
     </AuthGuard>
   );
 }

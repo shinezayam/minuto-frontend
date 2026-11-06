@@ -16,7 +16,7 @@ import {
   RotateCcw,
   PlayCircle,
 } from "lucide-react";
-import { Navbar } from "@/components/layout/navbar";
+import { AppShell } from "@/components/layout/app-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -210,24 +210,22 @@ export default function MeetingDetailContent() {
 
   if (loading) {
     return (
-      <>
-        <Navbar />
+      <AppShell>
         <main className="flex min-h-[60vh] flex-col items-center justify-center gap-4">
           <AudioLoadingAnimation className="scale-150" />
           <p className="text-muted-foreground">Уншиж байна...</p>
         </main>
-      </>
+      </AppShell>
     );
   }
 
   if (error && !meeting) {
     return (
-      <>
-        <Navbar />
+      <AppShell>
         <main className="mx-auto max-w-5xl px-4 py-8">
           <div className="rounded-lg bg-destructive/10 p-4 text-destructive">{error}</div>
         </main>
-      </>
+      </AppShell>
     );
   }
 
@@ -239,8 +237,7 @@ export default function MeetingDetailContent() {
         : null;
 
   return (
-    <>
-      <Navbar />
+    <AppShell>
       <main className="mx-auto max-w-5xl px-4 py-8">
         <div className="mb-6 flex items-start justify-between gap-4">
           <div className="min-w-0">
@@ -496,6 +493,6 @@ export default function MeetingDetailContent() {
           </TabsContent>
         </Tabs>
       </main>
-    </>
+    </AppShell>
   );
 }

@@ -3,7 +3,7 @@
 import { useState, useRef, DragEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Upload, Mic, FileAudio, X, AlertCircle, CheckCircle2 } from "lucide-react";
-import { Navbar } from "@/components/layout/navbar";
+import { AppShell } from "@/components/layout/app-shell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -117,8 +117,7 @@ function UploadContent() {
   };
 
   return (
-    <>
-      <Navbar />
+    <AppShell>
       <main className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-6">
           <h1 className="text-3xl font-bold">Аудио файл оруулах</h1>
@@ -285,6 +284,6 @@ function UploadContent() {
           </div>
         </div>
       </main>
-    </>
+    </AppShell>
   );
 }

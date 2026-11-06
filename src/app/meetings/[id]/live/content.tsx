@@ -18,7 +18,7 @@ import {
   Check,
   Radio,
 } from "lucide-react";
-import { Navbar } from "@/components/layout/navbar";
+import { AppShell } from "@/components/layout/app-shell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -208,8 +208,7 @@ export default function LiveMeetingContent() {
 
   if (!started) {
     return (
-      <>
-        <Navbar />
+      <AppShell>
         <main className="mx-auto flex max-w-2xl flex-1 items-center justify-center px-4 py-8">
           <Card className="w-full">
             <CardContent className="p-6 sm:p-8">
@@ -329,15 +328,14 @@ export default function LiveMeetingContent() {
             </CardContent>
           </Card>
         </main>
-      </>
+      </AppShell>
     );
   }
 
   const recordingActive = audio.status === "recording" || audio.status === "paused";
 
   return (
-    <>
-      <Navbar />
+    <AppShell>
       <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
         {/* Meeting header */}
         <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -502,7 +500,7 @@ export default function LiveMeetingContent() {
           )}
         </div>
       </main>
-    </>
+    </AppShell>
   );
 }
 
