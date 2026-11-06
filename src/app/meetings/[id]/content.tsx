@@ -18,6 +18,9 @@ import {
   MessageCircleQuestion,
   PenLine,
   UserRound,
+  Pencil,
+  Check,
+  X,
 } from "lucide-react";
 import { ParticipantsInput } from "@/components/meetings/participants-input";
 import { Highlight, TranscriptReplacePanel, buildMatcher, type ReplaceOptions } from "@/components/meetings/transcript-replace";
@@ -25,6 +28,7 @@ import { AppShell } from "@/components/layout/app-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { LoadingState } from "@/components/ui/loading-state";
 import { ErrorState } from "@/components/ui/error-state";
 import { AskPanel, formatTimestamp } from "@/components/ask/ask-panel";
@@ -135,6 +139,10 @@ export default function MeetingDetailContent() {
   const [activeSeg, setActiveSeg] = useState<string | null>(null);
   const [editingPeople, setEditingPeople] = useState(false);
   const [peopleDraft, setPeopleDraft] = useState<string[]>([]);
+  const [transcriptEditMode, setTranscriptEditMode] = useState(false);
+  const [editingSegment, setEditingSegment] = useState<string | null>(null);
+  const [segmentDraft, setSegmentDraft] = useState("");
+  const [speakerDraft, setSpeakerDraft] = useState("");
   const [savingPeople, setSavingPeople] = useState(false);
   const [replaceOpen, setReplaceOpen] = useState(false);
   const [replaceOpts, setReplaceOpts] = useState<ReplaceOptions>({ find: "", replacement: "", wholeWord: true });
@@ -246,6 +254,34 @@ export default function MeetingDetailContent() {
       setError(friendlyError(err));
     } finally {
       setRetrying(false);
+    }
+  };
+
+  const startEditSegment = (seg: TranscriptSegment) => {
+    setEditingSegment(seg.id);
+    // Хэрэв turns байгаа бол эхний turn-ийн текстийг авна
+    const text = seg.turns?.[0]?.text ?? seg.text ?? "";
+    const speaker = seg.turns?.[0]?.speaker ?? seg.speaker ?? "";
+    setSegmentDraft(text);
+    setSpeakerDraft(speaker);
+  };
+
+  const cancelEditSegment = () => {
+    setEditingSegment(null);
+    setSegmentDraft("");
+    setSpeakerDraft("");
+  };
+
+  const saveSegment = async () => {
+    if (!editingSegment) return;
+    try {
+      const result = await api.updateTranscript(meetingId, [
+        { id: editingSegment, text: segmentDraft, speaker: speakerDraft || undefined },
+      ]);
+      setTranscript(result.segments);
+      cancelEditSegment();
+    } catch (err) {
+      setError(friendlyError(err));
     }
   };
 
@@ -597,12 +633,25 @@ export default function MeetingDetailContent() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between gap-2">
                 <CardTitle>Бичвэр</CardTitle>
-                {transcript.length > 0 && !replaceOpen && (
-                  <Button variant="outline" size="sm" onClick={() => setReplaceOpen(true)} disabled={isProcessing}>
-                    <PenLine />
-                    Үг засах
-                  </Button>
-                )}
+                <div className="flex items-center gap-2">
+                  {transcript.length > 0 && (
+                    <Button
+                      variant={transcriptEditMode ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setTranscriptEditMode(!transcriptEditMode)}
+                      disabled={isProcessing}
+                    >
+                      <Pencil className="h-4 w-4 mr-1" />
+                      {transcriptEditMode ? "Засварлах горим" : "Засварлах"}
+                    </Button>
+                  )}
+                  {transcript.length > 0 && !replaceOpen && !transcriptEditMode && (
+                    <Button variant="outline" size="sm" onClick={() => setReplaceOpen(true)} disabled={isProcessing}>
+                      <PenLine />
+                      Үг засах
+                    </Button>
+                  )}
+                </div>
               </CardHeader>
               <CardContent className="space-y-3">
                 {replaceOpen && transcript.length > 0 && (
@@ -625,45 +674,92 @@ export default function MeetingDetailContent() {
                   />
                 )}
                 {transcript.length > 0 ? (
-                  <div className="space-y-3" onMouseUp={replaceOpen ? handleTranscriptSelect : undefined} onDoubleClick={handleTranscriptSelect}>
-                    {transcript.map((segment) => (
-                      <div
-                        key={segment.id}
-                        id={`seg-${segment.id}`}
-                        className={`scroll-mt-24 rounded-lg border p-3 transition-colors ${
-                          activeSeg === segment.id ? "border-primary bg-primary/5 ring-2 ring-primary/20" : "border-border"
-                        }`}
-                      >
-                        <button
-                          type="button"
-                          onClick={() => seekTo(segment.start_ms, segment.id)}
-                          className="mb-1 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
-                          title="Энэ хэсгээс тоглуулах"
+                  <div className="space-y-3" onMouseUp={replaceOpen && !transcriptEditMode ? handleTranscriptSelect : undefined} onDoubleClick={transcriptEditMode ? undefined : handleTranscriptSelect}>
+                    {transcript.map((segment) => {
+                      const isEditing = editingSegment === segment.id;
+                      const firstTurn = segment.turns?.[0];
+                      const displayText = firstTurn?.text ?? segment.text ?? "";
+                      const displaySpeaker = firstTurn?.speaker ?? segment.speaker ?? "";
+
+                      return (
+                        <div
+                          key={segment.id}
+                          id={`seg-${segment.id}`}
+                          className={`scroll-mt-24 rounded-lg border p-3 transition-colors ${
+                            activeSeg === segment.id ? "border-primary bg-primary/5 ring-2 ring-primary/20" : "border-border"
+                          } ${transcriptEditMode ? "cursor-pointer hover:border-primary/50" : ""}`}
+                          onClick={() => transcriptEditMode && !isEditing && startEditSegment(segment)}
                         >
-                          <PlayCircle className="h-3 w-3" />
-                          {formatTime(segment.start_ms)} - {formatTime(segment.end_ms)}
-                        </button>
-                        {segment.turns && segment.turns.length > 0 ? (
-                          <div className="space-y-1.5">
-                            {segment.turns.map((turn, i) => (
-                              <p key={i} className="text-sm">
-                                {turn.speaker && (
-                                  <span className={`mr-1.5 inline-flex items-center gap-1 font-semibold ${speakerColor(turn.speaker, speakerOrder)}`}>
-                                    <UserRound className="h-3.5 w-3.5" />
-                                    {turn.speaker}:
-                                  </span>
-                                )}
-                                <Highlight text={turn.text} matcher={replaceMatcher} />
-                              </p>
-                            ))}
+                          <div className="flex items-center justify-between mb-1">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                seekTo(segment.start_ms, segment.id);
+                              }}
+                              className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                              title="Энэ хэсгээс тоглуулах"
+                            >
+                              <PlayCircle className="h-3 w-3" />
+                              {formatTime(segment.start_ms)} - {formatTime(segment.end_ms)}
+                            </button>
+                            {transcriptEditMode && !isEditing && (
+                              <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+                            )}
                           </div>
-                        ) : (
-                          <p className="whitespace-pre-line text-sm">
-                            <Highlight text={segment.text} matcher={replaceMatcher} />
-                          </p>
-                        )}
-                      </div>
-                    ))}
+
+                          {isEditing ? (
+                            <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
+                              <div>
+                                <label className="text-xs text-muted-foreground">Яригч</label>
+                                <Input
+                                  value={speakerDraft}
+                                  onChange={(e) => setSpeakerDraft(e.target.value)}
+                                  placeholder="Яригчийн нэр..."
+                                  className="h-8 mt-1"
+                                />
+                              </div>
+                              <div>
+                                <label className="text-xs text-muted-foreground">Текст</label>
+                                <textarea
+                                  value={segmentDraft}
+                                  onChange={(e) => setSegmentDraft(e.target.value)}
+                                  rows={3}
+                                  className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                                />
+                              </div>
+                              <div className="flex gap-2">
+                                <Button size="sm" onClick={saveSegment}>
+                                  <Check className="h-4 w-4 mr-1" />
+                                  Хадгалах
+                                </Button>
+                                <Button size="sm" variant="outline" onClick={cancelEditSegment}>
+                                  <X className="h-4 w-4 mr-1" />
+                                  Цуцлах
+                                </Button>
+                              </div>
+                            </div>
+                          ) : (
+                            <>
+                              {displaySpeaker && (
+                                <p className="text-sm">
+                                  <span className={`mr-1.5 inline-flex items-center gap-1 font-semibold ${speakerColor(displaySpeaker, speakerOrder)}`}>
+                                    <UserRound className="h-3.5 w-3.5" />
+                                    {displaySpeaker}:
+                                  </span>
+                                  <Highlight text={displayText} matcher={replaceMatcher} />
+                                </p>
+                              )}
+                              {!displaySpeaker && (
+                                <p className="whitespace-pre-line text-sm">
+                                  <Highlight text={displayText} matcher={replaceMatcher} />
+                                </p>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 ) : (
                   <div className="py-12 text-center text-muted-foreground">

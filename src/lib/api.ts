@@ -156,6 +156,13 @@ export const api = {
   getTranscript: (id: string) =>
     request<{ meeting_id: string; segments: TranscriptSegment[] }>(`/api/meetings/${id}/transcript`),
 
+  /** Бичвэрийн сегментүүдийг засварлах */
+  updateTranscript: (id: string, segments: Array<{ id: string; text?: string; speaker?: string }>) =>
+    request<{ meeting_id: string; segments: TranscriptSegment[] }>(`/api/meetings/${id}/transcript`, {
+      method: "PUT",
+      body: JSON.stringify({ segments }),
+    }),
+
   /** Буруу танигдсан үгийг бичвэр (include_minutes үед хурлын бичиг)-ийн бүх газарт засна */
   replaceInTranscript: (
     id: string,
