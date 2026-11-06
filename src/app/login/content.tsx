@@ -26,6 +26,7 @@ export default function LoginContent() {
     params.get("mode") === "register" ? "register" : "login",
   );
   const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -44,7 +45,7 @@ export default function LoginContent() {
     }
     setBusy(true);
     try {
-      const res = mode === "login" ? await api.login(email, password) : await api.register(email, password);
+      const res = mode === "login" ? await api.login(email, password) : await api.register(email, password, name);
       setAuth(res);
       router.replace(next);
     } catch (err) {
@@ -70,6 +71,21 @@ export default function LoginContent() {
             </p>
 
             <form onSubmit={submit} className="mt-6 space-y-4">
+              {!isLogin && (
+                <div className="space-y-2">
+                  <Label htmlFor="name">Нэр</Label>
+                  <Input
+                    id="name"
+                    autoComplete="name"
+                    maxLength={100}
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Жишээ нь: Б. Болд"
+                    className="h-10"
+                  />
+                  <p className="text-xs text-muted-foreground">Хурлын тэмдэглэлд &quot;Хөтөлсөн: Minuto / нэр&quot; гэж гарна</p>
+                </div>
+              )}
               <div className="space-y-2">
                 <Label htmlFor="email">Имэйл</Label>
                 <Input

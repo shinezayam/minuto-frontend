@@ -1,4 +1,5 @@
 import type {
+  Contact,
   AskMessage,
   AskResponse,
   Meeting,
@@ -31,6 +32,7 @@ export function friendlyErrorText(detail: string | null | undefined): string {
   if (d.startsWith("REGISTRATION_CLOSED")) return "Шинэ бүртгэл хаалттай байна.";
   if (d.startsWith("NO_MINUTES")) return "Хурлын бичиг үүсээгүй байна. Хурлыг нээж боловсруулалтын алдааг шалгаад дахин боловсруулна уу.";
   if (d.startsWith("ASK_FAILED")) return "AI хариулт өгч чадсангүй. Түр хүлээгээд дахин асууна уу.";
+  if (d.startsWith("INVALID_AUDIO")) return "Аудио файл гэмтсэн эсвэл дутуу байна. Файлаа тоглуулж шалгаад дахин оруулна уу.";
   if (d.startsWith("INTERNAL_ERROR")) return "Серверт алдаа гарлаа. Дахин оролдоно уу.";
   return d.replace(/^[A-Z_]+:\s*/, "") || "Тодорхойгүй алдаа";
 }
@@ -92,24 +94,36 @@ export const api = {
   login: (email: string, password: string) =>
     request<AuthResponse>("/api/auth/login", { method: "POST", body: JSON.stringify({ email, password }) }),
 
-  register: (email: string, password: string) =>
-    request<AuthResponse>("/api/auth/register", { method: "POST", body: JSON.stringify({ email, password }) }),
+  register: (email: string, password: string, name?: string) =>
+    request<AuthResponse>("/api/auth/register", {
+      method: "POST",
+      body: JSON.stringify({ email, password, name: name?.trim() || null }),
+    }),
+
+  /** Хэрэглэгчийн нэр — хурлын тэмдэглэлд "Хөтөлсөн: Minuto / нэр" гэж гарна */
+  updateMe: (name: string) =>
+    request<AuthUser>("/api/auth/me", { method: "PATCH", body: JSON.stringify({ name }) }),
+
+  // ---------- Байнгын оролцогчид ----------
+  listContacts: () => request<{ contacts: Contact[] }>("/api/contacts"),
+
+  deleteContact: (id: string) => request<void>(`/api/contacts/${id}`, { method: "DELETE" }),
 
   // ---------- Хурал ----------
-  createMeeting: (title?: string) =>
+  createMeeting: (title?: string, participants: string[] = []) =>
     request<Meeting>("/api/meetings", {
       method: "POST",
-      body: JSON.stringify({ title: title || "Шинэ хурал" }),
+      body: JSON.stringify({ title: title || "Шинэ хурал", participants }),
     }),
 
   listMeetings: () => request<MeetingListResponse>("/api/meetings"),
 
   getMeeting: (id: string) => request<Meeting>(`/api/meetings/${id}`),
 
-  updateMeeting: (id: string, title: string) =>
+  updateMeeting: (id: string, data: { title?: string; participants?: string[] }) =>
     request<Meeting>(`/api/meetings/${id}`, {
       method: "PATCH",
-      body: JSON.stringify({ title }),
+      body: JSON.stringify(data),
     }),
 
   startMeeting: (id: string) => request<Meeting>(`/api/meetings/${id}/start`, { method: "POST" }),

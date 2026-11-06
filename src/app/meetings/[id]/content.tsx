@@ -15,7 +15,11 @@ import {
   Loader2,
   RotateCcw,
   PlayCircle,
+  MessageCircleQuestion,
+  PenLine,
+  UserRound,
 } from "lucide-react";
+import { ParticipantsInput } from "@/components/meetings/participants-input";
 import { AppShell } from "@/components/layout/app-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -66,6 +70,22 @@ function SourceLinks({
   );
 }
 
+const SPEAKER_COLORS = [
+  "text-blue-600 dark:text-blue-400",
+  "text-emerald-600 dark:text-emerald-400",
+  "text-amber-600 dark:text-amber-400",
+  "text-fuchsia-600 dark:text-fuchsia-400",
+  "text-cyan-600 dark:text-cyan-400",
+  "text-rose-600 dark:text-rose-400",
+];
+
+/** Яригч бүрт тогтмол өнгө (бичвэр, асуулт-хариултад ижил) */
+function speakerColor(name: string | null | undefined, order: string[]): string {
+  if (!name) return "text-muted-foreground";
+  const i = order.indexOf(name);
+  return SPEAKER_COLORS[(i < 0 ? order.length : i) % SPEAKER_COLORS.length];
+}
+
 function ProcessingCard({ meeting }: { meeting: Meeting }) {
   const { processing_stage: stage, processing_done: done, processing_total: total } = meeting;
   const pct = stage === "summarizing" ? 100 : total > 0 ? Math.round((done / total) * 100) : 0;
@@ -111,6 +131,9 @@ export default function MeetingDetailContent() {
   const [retrying, setRetrying] = useState(false);
   const [tab, setTab] = useState("minutes");
   const [activeSeg, setActiveSeg] = useState<string | null>(null);
+  const [editingPeople, setEditingPeople] = useState(false);
+  const [peopleDraft, setPeopleDraft] = useState<string[]>([]);
+  const [savingPeople, setSavingPeople] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
   const searchParams = useSearchParams();
   // Боловсруулалт эхлүүлэх үеийн алдаа (upload/live хуудаснаас ?error=... гэж дамжина)
@@ -120,6 +143,12 @@ export default function MeetingDetailContent() {
   const linkSeg = searchParams.get("seg");
 
   const segmentsById = new Map(transcript.map((s) => [s.id, s]));
+
+  // Яригчдын дараалал (анх ярьсан дарааллаар) — өнгө оноохад
+  const speakerOrder: string[] = [];
+  for (const seg of transcript)
+    for (const t of seg.turns ?? []) if (t.speaker && !speakerOrder.includes(t.speaker)) speakerOrder.push(t.speaker);
+  for (const p of minutes?.participants ?? []) if (!speakerOrder.includes(p)) speakerOrder.push(p);
 
   /** Бичвэрийн хэсэг рүү очиж, аудиог тэр цагаас тоглуулна */
   const seekTo = useCallback((ms: number, segId: string | null) => {
@@ -204,6 +233,23 @@ export default function MeetingDetailContent() {
     }
   };
 
+  const savePeople = async (reprocess: boolean) => {
+    setSavingPeople(true);
+    setError(null);
+    try {
+      setMeeting(await api.updateMeeting(meetingId, { participants: peopleDraft }));
+      setEditingPeople(false);
+      if (reprocess) {
+        await api.processMeeting(meetingId);
+        setMeeting(await api.getMeeting(meetingId));
+      }
+    } catch (err) {
+      setError(friendlyError(err));
+    } finally {
+      setSavingPeople(false);
+    }
+  };
+
   const handleExport = () => {
     api.downloadDocx(meetingId).catch((err) => setError(friendlyError(err)));
   };
@@ -247,7 +293,39 @@ export default function MeetingDetailContent() {
                 <Clock className="h-4 w-4" />
                 {meeting ? new Date(meeting.created_at).toLocaleString("mn-MN") : ""}
               </span>
+              {minutes?.prepared_by && (
+                <span className="flex items-center gap-1" title="Хурлын тэмдэглэл хөтөлсөн">
+                  <PenLine className="h-4 w-4" />
+                  Хөтөлсөн: {minutes.prepared_by}
+                </span>
+              )}
             </div>
+            {meeting && !editingPeople && (
+              <div className="mt-2 flex flex-wrap items-center gap-1.5 text-sm">
+                <Users className="h-4 w-4 text-muted-foreground" />
+                {meeting.participants.length > 0 ? (
+                  meeting.participants.map((p) => (
+                    <span key={p} className="rounded-md bg-muted px-2 py-0.5">
+                      {p}
+                    </span>
+                  ))
+                ) : (
+                  <span className="text-muted-foreground">Оролцогч оруулаагүй</span>
+                )}
+                {!isProcessing && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPeopleDraft(meeting.participants);
+                      setEditingPeople(true);
+                    }}
+                    className="ml-1 text-xs font-medium text-primary hover:underline"
+                  >
+                    {meeting.participants.length > 0 ? "Засах" : "Нэмэх"}
+                  </button>
+                )}
+              </div>
+            )}
           </div>
           {minutes && !isProcessing && (
             <Button onClick={handleExport} variant="outline" className="shrink-0 gap-2">
@@ -256,6 +334,32 @@ export default function MeetingDetailContent() {
             </Button>
           )}
         </div>
+
+        {editingPeople && (
+          <Card className="mb-6">
+            <CardContent className="space-y-3 p-4">
+              <label htmlFor="participants" className="block text-sm font-medium">
+                Оролцогчид
+              </label>
+              <ParticipantsInput value={peopleDraft} onChange={setPeopleDraft} disabled={savingPeople} />
+              <p className="text-xs text-muted-foreground">
+                Дахин боловсруулбал AI яригчдыг эдгээр нэрээр таних оролдлого хийнэ (ярианаас нь тодорхой бол).
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <Button size="sm" variant="outline" onClick={() => setEditingPeople(false)} disabled={savingPeople}>
+                  Цуцлах
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => savePeople(false)} disabled={savingPeople}>
+                  Хадгалах
+                </Button>
+                <Button size="sm" onClick={() => savePeople(true)} disabled={savingPeople} className="gap-1.5">
+                  {savingPeople ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RotateCcw className="h-3.5 w-3.5" />}
+                  Хадгалаад дахин боловсруулах
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {meeting && isProcessing && <ProcessingCard meeting={meeting} />}
 
@@ -427,6 +531,45 @@ export default function MeetingDetailContent() {
                     </CardContent>
                   </Card>
                 )}
+
+                {/* Questions & answers */}
+                {(minutes.qa?.length ?? 0) > 0 && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <MessageCircleQuestion className="h-5 w-5" />
+                        Асуулт, хариулт
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="space-y-3">
+                        {minutes.qa!.map((qa, i) => (
+                          <li key={i} className="space-y-2 rounded-lg border border-border p-3 text-sm">
+                            <div>
+                              <span className={`font-semibold ${speakerColor(qa.asked_by, speakerOrder)}`}>
+                                {qa.asked_by || "Асуулт"}:
+                              </span>{" "}
+                              <span className="font-medium">{qa.question}</span>
+                            </div>
+                            <div className="border-l-2 border-border pl-3">
+                              {qa.answer ? (
+                                <>
+                                  <span className={`font-semibold ${speakerColor(qa.answered_by, speakerOrder)}`}>
+                                    {qa.answered_by || "Хариулт"}:
+                                  </span>{" "}
+                                  {qa.answer}
+                                </>
+                              ) : (
+                                <span className="italic text-muted-foreground">Хариулаагүй</span>
+                              )}
+                            </div>
+                            <SourceLinks ids={qa.source_segment_ids} segments={segmentsById} onSeek={(seg) => seekTo(seg.start_ms, seg.id)} />
+                          </li>
+                        ))}
+                      </ul>
+                    </CardContent>
+                  </Card>
+                )}
               </>
             ) : (
               <Card>
@@ -462,7 +605,23 @@ export default function MeetingDetailContent() {
                           <PlayCircle className="h-3 w-3" />
                           {formatTime(segment.start_ms)} - {formatTime(segment.end_ms)}
                         </button>
-                        <p className="text-sm">{segment.text}</p>
+                        {segment.turns && segment.turns.length > 0 ? (
+                          <div className="space-y-1.5">
+                            {segment.turns.map((turn, i) => (
+                              <p key={i} className="text-sm">
+                                {turn.speaker && (
+                                  <span className={`mr-1.5 inline-flex items-center gap-1 font-semibold ${speakerColor(turn.speaker, speakerOrder)}`}>
+                                    <UserRound className="h-3.5 w-3.5" />
+                                    {turn.speaker}:
+                                  </span>
+                                )}
+                                {turn.text}
+                              </p>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="whitespace-pre-line text-sm">{segment.text}</p>
+                        )}
                       </div>
                     ))}
                   </div>

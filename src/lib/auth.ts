@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 export interface AuthUser {
   id: string;
   email: string;
+  name?: string | null;
 }
 
 interface StoredAuth {
@@ -40,6 +41,12 @@ export function setAuth(auth: StoredAuth) {
     // storage ажиллахгүй бол зөвхөн энэ tab-д нэвтэрсэн хэвээр байна
   }
   emit();
+}
+
+/** Хэрэглэгчийн мэдээлэл (нэр) өөрчлөгдөхөд токеныг хэвээр үлдээж шинэчилнэ */
+export function updateStoredUser(user: AuthUser) {
+  const current = read();
+  if (current) setAuth({ ...current, user });
 }
 
 export function clearAuth() {

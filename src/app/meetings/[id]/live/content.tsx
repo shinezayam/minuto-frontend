@@ -30,6 +30,7 @@ import {
 } from "@/hooks/use-audio-capture";
 import { useWebSocket } from "@/hooks/use-websocket";
 import { api, friendlyError } from "@/lib/api";
+import { ParticipantsInput } from "@/components/meetings/participants-input";
 import { formatDuration, formatTimestamp } from "@/lib/audio-utils";
 import type { AudioChunkData, Meeting } from "@/lib/types";
 
@@ -53,6 +54,7 @@ export default function LiveMeetingContent() {
   );
   const [includeMic, setIncludeMic] = useState(true);
   const [title, setTitle] = useState("");
+  const [participants, setParticipants] = useState<string[]>([]);
   const [liveEnabled, setLiveEnabled] = useState<boolean | null>(null);
   const [elapsed, setElapsed] = useState(0);
   const [chunksSent, setChunksSent] = useState(0);
@@ -85,6 +87,7 @@ export default function LiveMeetingContent() {
         .then((m) => {
           setMeeting(m);
           setTitle(m.title);
+          setParticipants(m.participants ?? []);
         })
         .catch(() => {});
     }
@@ -139,13 +142,16 @@ export default function LiveMeetingContent() {
     try {
       let currentMeetingId = activeMeetingIdRef.current ?? meetingId;
       if (currentMeetingId === "new") {
-        const newMeeting = await api.createMeeting(title.trim() || defaultTitle(source));
+        const newMeeting = await api.createMeeting(title.trim() || defaultTitle(source), participants);
         currentMeetingId = newMeeting.id;
         setMeeting(newMeeting);
         // router.replace() нь хуудсыг дахин mount хийж WebSocket, микрофоныг хаадаг тул URL-ийг л солино
         window.history.replaceState(null, "", `/meetings/${currentMeetingId}/live`);
-      } else if (title.trim() && meeting && title.trim() !== meeting.title) {
-        setMeeting(await api.updateMeeting(currentMeetingId, title.trim()));
+      } else if (meeting) {
+        const changes: { title?: string; participants?: string[] } = {};
+        if (title.trim() && title.trim() !== meeting.title) changes.title = title.trim();
+        if (participants.join("|") !== (meeting.participants ?? []).join("|")) changes.participants = participants;
+        if (Object.keys(changes).length) setMeeting(await api.updateMeeting(currentMeetingId, changes));
       }
       activeMeetingIdRef.current = currentMeetingId;
 
@@ -285,6 +291,15 @@ export default function LiveMeetingContent() {
                   maxLength={200}
                   onChange={(e) => setTitle(e.target.value)}
                 />
+              </div>
+
+              <div className="mt-4">
+                <label className="text-sm font-medium" htmlFor="participants">
+                  Оролцогчид <span className="font-normal text-muted-foreground">(заавал биш)</span>
+                </label>
+                <div className="mt-1.5">
+                  <ParticipantsInput value={participants} onChange={setParticipants} disabled={starting} />
+                </div>
               </div>
 
               {/* Зөвшөөрөл */}

@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { AudioLoadingAnimation } from "@/components/ui/audio-loading-animation";
 import { api, friendlyError } from "@/lib/api";
 import { AuthGuard } from "@/components/layout/auth-guard";
+import { ParticipantsInput } from "@/components/meetings/participants-input";
 
 const AUDIO_EXT = /\.(mp3|m4a|wav|ogg|opus|webm|flac|aac|mp4)$/i;
 const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100 MB
@@ -26,6 +27,7 @@ function UploadContent() {
   const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [title, setTitle] = useState("");
+  const [participants, setParticipants] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -84,7 +86,7 @@ function UploadContent() {
     try {
       // Create meeting
       setUploadProgress(10);
-      const meeting = await api.createMeeting(title || "Аудио бичлэг");
+      const meeting = await api.createMeeting(title || "Аудио бичлэг", participants);
 
       setUploadProgress(30);
       await api.uploadAudio(meeting.id, file);
@@ -197,6 +199,17 @@ function UploadContent() {
                     placeholder="Шинэ хурал"
                     disabled={uploading}
                   />
+                </div>
+
+                {/* Participants */}
+                <div>
+                  <label htmlFor="participants" className="mb-2 block text-sm font-medium">
+                    Оролцогчид <span className="font-normal text-muted-foreground">(заавал биш)</span>
+                  </label>
+                  <ParticipantsInput value={participants} onChange={setParticipants} disabled={uploading} />
+                  <p className="mt-1.5 text-xs text-muted-foreground">
+                    Нэрсийг оруулбал AI ярьж буй хүмүүсийг нэрээр нь таних боломжтой болно.
+                  </p>
                 </div>
 
                 {/* Progress bar */}
