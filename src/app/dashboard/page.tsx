@@ -18,6 +18,7 @@ import type { Meeting } from "@/lib/types";
 type SortField = "date" | "title" | "duration";
 type SortOrder = "asc" | "desc";
 type ViewMode = "grid" | "list";
+type TabType = "active" | "archived";
 
 function DashboardContent() {
   const router = useRouter();
@@ -29,15 +30,15 @@ function DashboardContent() {
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
-  const [showArchived, setShowArchived] = useState(false);
+  const [activeTab, setActiveTab] = useState<TabType>("active");
 
   useEffect(() => {
     api
-      .listMeetings(showArchived)
+      .listMeetings(activeTab === "archived")
       .then((res) => setMeetings(res.meetings))
       .catch((err) => setLoadError(friendlyError(err)))
       .finally(() => setLoading(false));
-  }, [showArchived]);
+  }, [activeTab]);
 
   // Боловсруулж буй хурал байвал төлөвийг 5 секунд тутам шинэчилнэ
   const anyProcessing = meetings.some((m) => m.status === "processing");
@@ -164,6 +165,30 @@ function DashboardContent() {
           </div>
         </div>
 
+        {/* Tabs */}
+        <div className="mt-6 flex gap-1 rounded-xl bg-muted/50 p-1">
+          <button
+            onClick={() => setActiveTab("active")}
+            className={`flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+              activeTab === "active"
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            📋 Идэвхтэй хурлууд
+          </button>
+          <button
+            onClick={() => setActiveTab("archived")}
+            className={`flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+              activeTab === "archived"
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            📦 Архивласан
+          </button>
+        </div>
+
         {/* Statistics Cards */}
         {!loading && meetings.length > 0 && (
           <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -268,25 +293,6 @@ function DashboardContent() {
                   <SortDesc className="h-4 w-4" />
                 )}
               </Button>
-              <Button
-                variant={showArchived ? "default" : "outline"}
-                size="sm"
-                onClick={() => setShowArchived(!showArchived)}
-                title={showArchived ? "Идэвхтэй хурлууд руу буцах" : "Архивласан хурлуудыг харуулах"}
-                className="rounded-full gap-1.5"
-              >
-                {showArchived ? (
-                  <>
-                    <ArchiveRestore className="h-4 w-4" />
-                    <span className="text-xs">Идэвхтэй</span>
-                  </>
-                ) : (
-                  <>
-                    <Archive className="h-4 w-4" />
-                    <span className="text-xs">Архив</span>
-                  </>
-                )}
-              </Button>
               <div className="flex items-center rounded-full border border-input">
                 <Button
                   variant={viewMode === "grid" ? "default" : "ghost"}
@@ -351,7 +357,12 @@ function DashboardContent() {
                   meeting={meeting}
                   onDelete={() => handleDelete(meeting.id)}
                   onRename={(newTitle) => handleRename(meeting.id, newTitle)}
-                  onArchive={() => handleArchive(meeting.id)}
+                  onToggleArchive={() => 
+                    activeTab === "archived" 
+                      ? handleUnarchive(meeting.id) 
+                      : handleArchive(meeting.id)
+                  }
+                  isArchived={activeTab === "archived"}
                 />
               ))}
             </div>
@@ -363,7 +374,12 @@ function DashboardContent() {
                   meeting={meeting}
                   onDelete={() => handleDelete(meeting.id)}
                   onRename={(newTitle) => handleRename(meeting.id, newTitle)}
-                  onArchive={() => handleArchive(meeting.id)}
+                  onToggleArchive={() => 
+                    activeTab === "archived" 
+                      ? handleUnarchive(meeting.id) 
+                      : handleArchive(meeting.id)
+                  }
+                  isArchived={activeTab === "archived"}
                 />
               ))}
             </div>
@@ -379,12 +395,14 @@ function MeetingCard({
   meeting,
   onDelete,
   onRename,
-  onArchive,
+  onToggleArchive,
+  isArchived,
 }: {
   meeting: Meeting;
   onDelete: () => void;
   onRename: (newTitle: string) => void;
-  onArchive: () => void;
+  onToggleArchive: () => void;
+  isArchived: boolean;
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(meeting.title);
@@ -515,11 +533,20 @@ function MeetingCard({
             variant="ghost"
             size="sm"
             className="h-8 shrink-0 rounded-full text-muted-foreground hover:text-foreground gap-1"
-            title="Архивлах - Хурлыг устгахгүйгээр жагсаалтаас нуух"
-            onClick={onArchive}
+            title={isArchived ? "Идэвхтэй болгох - Хурлыг буцаах" : "Архивлах - Хурлыг устгахгүйгээр жагсаалтаас нуух"}
+            onClick={onToggleArchive}
           >
-            <Archive className="h-4 w-4" />
-            <span className="text-xs">Архив</span>
+            {isArchived ? (
+              <>
+                <ArchiveRestore className="h-4 w-4" />
+                <span className="text-xs">Буцаах</span>
+              </>
+            ) : (
+              <>
+                <Archive className="h-4 w-4" />
+                <span className="text-xs">Архив</span>
+              </>
+            )}
           </Button>
           <Button
             variant="ghost"
@@ -540,12 +567,14 @@ function MeetingListItem({
   meeting,
   onDelete,
   onRename,
-  onArchive,
+  onToggleArchive,
+  isArchived,
 }: {
   meeting: Meeting;
   onDelete: () => void;
   onRename: (newTitle: string) => void;
-  onArchive: () => void;
+  onToggleArchive: () => void;
+  isArchived: boolean;
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(meeting.title);
@@ -653,11 +682,20 @@ function MeetingListItem({
           variant="ghost"
           size="sm"
           className="h-8 shrink-0 rounded-full text-muted-foreground hover:text-foreground gap-1"
-          title="Архивлах - Хурлыг устгахгүйгээр жагсаалтаас нуух"
-          onClick={onArchive}
+          title={isArchived ? "Идэвхтэй болгох - Хурлыг буцаах" : "Архивлах - Хурлыг устгахгүйгээр жагсаалтаас нуух"}
+          onClick={onToggleArchive}
         >
-          <Archive className="h-4 w-4" />
-          <span className="text-xs">Архив</span>
+          {isArchived ? (
+            <>
+              <ArchiveRestore className="h-4 w-4" />
+              <span className="text-xs">Буцаах</span>
+            </>
+          ) : (
+            <>
+              <Archive className="h-4 w-4" />
+              <span className="text-xs">Архив</span>
+            </>
+          )}
         </Button>
         <Button
           variant="ghost"
