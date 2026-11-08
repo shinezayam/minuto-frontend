@@ -405,8 +405,12 @@ export default function MeetingDetailContent() {
     }
   };
 
-  const handleExport = () => {
-    api.downloadDocx(meetingId).catch((err) => setError(friendlyError(err)));
+  const handleExport = (format: "docx" | "pdf") => {
+    if (format === "pdf") {
+      api.downloadPdf(meetingId).catch((err) => setError(friendlyError(err)));
+    } else {
+      api.downloadDocx(meetingId).catch((err) => setError(friendlyError(err)));
+    }
   };
 
   if (loading) {
@@ -513,10 +517,24 @@ export default function MeetingDetailContent() {
             )}
           </div>
           {minutes && !isProcessing && (
-            <Button onClick={handleExport} variant="outline" className="shrink-0 gap-2">
-              <Download className="h-4 w-4" />
-              DOCX татах
-            </Button>
+            <div className="relative shrink-0">
+              <Button
+                onClick={() => handleExport("docx")}
+                variant="outline"
+                className="gap-2"
+              >
+                <Download className="h-4 w-4" />
+                DOCX
+              </Button>
+              <Button
+                onClick={() => handleExport("pdf")}
+                variant="outline"
+                className="ml-2 gap-2"
+              >
+                <Download className="h-4 w-4" />
+                PDF
+              </Button>
+            </div>
           )}
         </div>
 

@@ -257,5 +257,25 @@ export const api = {
     setTimeout(() => URL.revokeObjectURL(url), 10_000);
   },
 
+  /** PDF-ийг татна. */
+  downloadPdf: async (id: string) => {
+    const res = await fetch(`${API_BASE}/api/meetings/${id}/export.pdf`, { headers: authHeaders() });
+    if (!res.ok) {
+      if (res.status === 401) handleUnauthorized();
+      throw new ApiError(
+        res.status,
+        res.status === 404 ? "NO_MINUTES: Хурлын бичиг үүсээгүй байна" : await res.text(),
+      );
+    }
+    const url = URL.createObjectURL(await res.blob());
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `meeting_${id}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 10_000);
+  },
+
   getWsUrl: (meetingId: string) => withToken(`${API_BASE.replace(/^http/, "ws")}/ws/meetings/${meetingId}/audio`),
 };
