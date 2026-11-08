@@ -151,6 +151,8 @@ export default function MeetingDetailContent() {
   const [replaceOpen, setReplaceOpen] = useState(false);
   const [replaceOpts, setReplaceOpts] = useState<ReplaceOptions>({ find: "", replacement: "", wholeWord: true });
   const [replaceFocus, setReplaceFocus] = useState(0);
+  const [editingTitle, setEditingTitle] = useState(false);
+  const [titleDraft, setTitleDraft] = useState("");
   const audioPlayerRef = useRef<AudioPlayerRef>(null);
   const searchParams = useSearchParams();
   // Боловсруулалт эхлүүлэх үеийн алдаа (upload/live хуудаснаас ?error=... гэж дамжина)
@@ -329,6 +331,17 @@ export default function MeetingDetailContent() {
     navigator.clipboard.writeText(minutes.summary);
   };
 
+  const saveTitle = async () => {
+    if (!meeting || !titleDraft.trim()) return;
+    try {
+      const updated = await api.updateMeeting(meetingId, { title: titleDraft.trim() });
+      setMeeting(updated);
+      setEditingTitle(false);
+    } catch (err) {
+      setError(friendlyError(err));
+    }
+  };
+
   const savePeople = async (reprocess: boolean) => {
     setSavingPeople(true);
     setError(null);
@@ -379,8 +392,41 @@ export default function MeetingDetailContent() {
     <AppShell>
       <main className="mx-auto max-w-5xl px-4 py-8">
         <div className="mb-6 flex items-start justify-between gap-4">
-          <div className="min-w-0">
-            <h1 className="truncate text-3xl font-bold">{meeting?.title || "Хурлын дэлгэрэнгүй"}</h1>
+          <div className="min-w-0 flex-1">
+            {editingTitle ? (
+              <div className="flex items-center gap-2">
+                <Input
+                  value={titleDraft}
+                  onChange={(e) => setTitleDraft(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") saveTitle();
+                    if (e.key === "Escape") setEditingTitle(false);
+                  }}
+                  className="text-3xl font-bold"
+                  autoFocus
+                />
+                <Button size="sm" onClick={saveTitle}>
+                  <Check className="h-4 w-4" />
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => setEditingTitle(false)}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            ) : (
+              <h1
+                className="group truncate text-3xl font-bold cursor-pointer hover:text-primary transition-colors"
+                onClick={() => {
+                  if (meeting) {
+                    setTitleDraft(meeting.title);
+                    setEditingTitle(true);
+                  }
+                }}
+                title="Дарж засах"
+              >
+                {meeting?.title || "Хурлын дэлгэрэнгүй"}
+                <Pencil className="ml-2 inline h-5 w-5 opacity-0 group-hover:opacity-50 transition-opacity" />
+              </h1>
+            )}
             <div className="mt-2 flex items-center gap-4 text-sm text-muted-foreground">
               <span className="flex items-center gap-1">
                 <Clock className="h-4 w-4" />
