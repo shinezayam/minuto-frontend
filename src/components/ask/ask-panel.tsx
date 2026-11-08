@@ -21,6 +21,13 @@ interface AskPanelProps {
   /** Эх сурвалж дээр дарахад. true буцаавал өөрөө шийдсэн (жишээ нь тухайн хуудсанд аудиог гүйлгэсэн) */
   onCitation?: (c: AskCitation) => boolean | void;
   examples?: string[];
+  /** Шүүлтүүрүүд (огноо, оролцогч) */
+  filters?: {
+    date_from?: string;
+    date_to?: string;
+    meeting_ids?: string[];
+    participant?: string;
+  };
   className?: string;
 }
 
@@ -62,7 +69,7 @@ function renderAnswer(text: string, citations: AskCitation[], onPick: (c: AskCit
   return out;
 }
 
-export function AskPanel({ meetingId, onCitation, examples = [], className }: AskPanelProps) {
+export function AskPanel({ meetingId, onCitation, examples = [], filters, className }: AskPanelProps) {
   const router = useRouter();
   const [entries, setEntries] = useState<ChatEntry[]>([]);
   const [input, setInput] = useState("");
@@ -88,7 +95,7 @@ export function AskPanel({ meetingId, onCitation, examples = [], className }: As
     setInput("");
     setLoading(true);
     try {
-      const res = await api.ask(question, meetingId, history);
+      const res = await api.ask(question, meetingId, history, filters);
       setEntries((prev) => [...prev, { role: "assistant", content: res.answer, citations: res.citations }]);
     } catch (err) {
       setEntries((prev) => [...prev, { role: "assistant", content: friendlyError(err), error: true }]);

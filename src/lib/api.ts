@@ -227,10 +227,20 @@ export const api = {
     ),
 
   /** Ask Minuto — meetingId өгвөл зөвхөн тэр хурлаас, үгүй бол бүх хурлаас асууна */
-  ask: (question: string, meetingId?: string, history: AskMessage[] = []) =>
+  ask: (question: string, meetingId?: string, history: AskMessage[] = [], filters?: {
+    date_from?: string;
+    date_to?: string;
+    meeting_ids?: string[];
+    participant?: string;
+  }) =>
     request<AskResponse>("/api/ask", {
       method: "POST",
-      body: JSON.stringify({ question, meeting_id: meetingId ?? null, history }),
+      body: JSON.stringify({
+        question,
+        meeting_id: meetingId ?? null,
+        history,
+        ...filters,
+      }),
     }),
 
   audioUrl: (id: string) => withToken(`${API_BASE}/api/meetings/${id}/audio`),
