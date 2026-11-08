@@ -74,7 +74,7 @@ export interface MeetingMinutes {
   summary: string;
   topics: Array<{ title: string; description: string; source_segment_ids?: string[] }>;
   decisions: Array<{ text: string; rationale?: string | null; source_segment_ids?: string[] }>;
-  action_items: Array<{ task: string; owner?: string | null; due_date?: string | null; source_segment_ids?: string[] }>;
+  action_items: Array<{ task: string; owner?: string | null; due_date?: string | null; status?: string; source_segment_ids?: string[] }>;
   open_questions?: Array<{ text: string; source_segment_ids?: string[] }>;
   /** Ярьсан хүмүүс ("Яригч 1"... эсвэл нэр) */
   participants?: string[];

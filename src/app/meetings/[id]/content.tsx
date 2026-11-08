@@ -153,6 +153,14 @@ export default function MeetingDetailContent() {
   const [replaceFocus, setReplaceFocus] = useState(0);
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState("");
+  const [actionItemsDraft, setActionItemsDraft] = useState<Array<{
+    task: string;
+    owner?: string | null;
+    due_date?: string | null;
+    status: string;
+    source_segment_ids?: string[];
+  }>>([]);
+  const [editingActionItem, setEditingActionItem] = useState<number | null>(null);
   const audioPlayerRef = useRef<AudioPlayerRef>(null);
   const searchParams = useSearchParams();
   // Боловсруулалт эхлүүлэх үеийн алдаа (upload/live хуудаснаас ?error=... гэж дамжина)
@@ -337,6 +345,44 @@ export default function MeetingDetailContent() {
       const updated = await api.updateMeeting(meetingId, { title: titleDraft.trim() });
       setMeeting(updated);
       setEditingTitle(false);
+    } catch (err) {
+      setError(friendlyError(err));
+    }
+  };
+
+  // Action items load хийх
+  useEffect(() => {
+    if (minutes?.action_items) {
+      setActionItemsDraft(minutes.action_items.map(item => ({
+        task: item.task,
+        owner: item.owner,
+        due_date: item.due_date,
+        status: item.status || "open",
+        source_segment_ids: item.source_segment_ids,
+      })));
+    }
+  }, [minutes]);
+
+  const toggleActionItemStatus = async (index: number) => {
+    const updated = [...actionItemsDraft];
+    updated[index] = {
+      ...updated[index],
+      status: updated[index].status === "done" ? "open" : "done",
+    };
+    setActionItemsDraft(updated);
+    try {
+      await api.updateActionItems(meetingId, updated);
+    } catch (err) {
+      setError(friendlyError(err));
+    }
+  };
+
+  const updateActionItemField = async (index: number, field: string, value: string) => {
+    const updated = [...actionItemsDraft];
+    updated[index] = { ...updated[index], [field]: value || null };
+    setActionItemsDraft(updated);
+    try {
+      await api.updateActionItems(meetingId, updated);
     } catch (err) {
       setError(friendlyError(err));
     }
@@ -660,34 +706,85 @@ export default function MeetingDetailContent() {
                 )}
 
                 {/* Action Items */}
-                {minutes.action_items.length > 0 && (
+                {actionItemsDraft.length > 0 && (
                   <Card>
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <Users className="h-5 w-5" />
                         Үүрэг даалгавар
+                        <span className="ml-auto text-sm font-normal text-muted-foreground">
+                          {actionItemsDraft.filter(i => i.status === "done").length}/{actionItemsDraft.length} дууссан
+                        </span>
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
                       <ul className="space-y-3">
-                        {minutes.action_items.map((item, i) => (
-                          <li key={i} className="rounded-lg border border-border p-3">
-                            <p className="font-medium">{item.task}</p>
-                            <div className="mt-2 flex gap-4 text-sm text-muted-foreground">
-                              {item.owner && (
-                                <span className="flex items-center gap-1">
-                                  <Users className="h-3 w-3" />
-                                  {item.owner}
-                                </span>
-                              )}
-                              {item.due_date && (
-                                <span className="flex items-center gap-1">
-                                  <Clock className="h-3 w-3" />
-                                  {item.due_date}
-                                </span>
-                              )}
+                        {actionItemsDraft.map((item, i) => (
+                          <li key={i} className={`rounded-lg border p-3 transition-colors ${
+                            item.status === "done" ? "border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950/20" : "border-border"
+                          }`}>
+                            <div className="flex items-start gap-3">
+                              <button
+                                type="button"
+                                onClick={() => toggleActionItemStatus(i)}
+                                className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 transition-colors ${
+                                  item.status === "done"
+                                    ? "border-green-500 bg-green-500 text-white"
+                                    : "border-muted-foreground/40 hover:border-primary"
+                                }`}
+                              >
+                                {item.status === "done" && <Check className="h-3 w-3" />}
+                              </button>
+                              <div className="min-w-0 flex-1">
+                                <p className={`font-medium ${item.status === "done" ? "text-muted-foreground line-through" : ""}`}>
+                                  {item.task}
+                                </p>
+                                <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
+                                  {/* Owner */}
+                                  {editingActionItem === i ? (
+                                    <input
+                                      type="text"
+                                      value={item.owner || ""}
+                                      onChange={(e) => updateActionItemField(i, "owner", e.target.value)}
+                                      onBlur={() => setEditingActionItem(null)}
+                                      onKeyDown={(e) => e.key === "Enter" && setEditingActionItem(null)}
+                                      placeholder="Хариуцагч..."
+                                      className="h-7 rounded border border-input bg-background px-2 text-sm"
+                                      autoFocus
+                                    />
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      onClick={() => setEditingActionItem(i)}
+                                      className="flex items-center gap-1 rounded px-1.5 py-0.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+                                    >
+                                      <Users className="h-3 w-3" />
+                                      {item.owner || "Хариуцагч томилоогүй"}
+                                    </button>
+                                  )}
+                                  {/* Due date */}
+                                  {editingActionItem === i ? (
+                                    <input
+                                      type="date"
+                                      value={item.due_date || ""}
+                                      onChange={(e) => updateActionItemField(i, "due_date", e.target.value)}
+                                      onBlur={() => setEditingActionItem(null)}
+                                      className="h-7 rounded border border-input bg-background px-2 text-sm"
+                                    />
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      onClick={() => setEditingActionItem(i)}
+                                      className="flex items-center gap-1 rounded px-1.5 py-0.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+                                    >
+                                      <Clock className="h-3 w-3" />
+                                      {item.due_date || "Хугацаа томилоогүй"}
+                                    </button>
+                                  )}
+                                </div>
+                                <SourceLinks ids={item.source_segment_ids} segments={segmentsById} onSeek={(seg) => seekTo(seg.start_ms, seg.id)} />
+                              </div>
                             </div>
-                            <SourceLinks ids={item.source_segment_ids} segments={segmentsById} onSeek={(seg) => seekTo(seg.start_ms, seg.id)} />
                           </li>
                         ))}
                       </ul>

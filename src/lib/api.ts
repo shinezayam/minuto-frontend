@@ -216,6 +216,16 @@ export const api = {
       method: "POST",
     }),
 
+  /** Action items-г update хийх */
+  updateActionItems: (id: string, actionItems: Array<Record<string, unknown>>) =>
+    request<{ meeting_id: string; action_items: Array<Record<string, unknown>> }>(
+      `/api/meetings/${id}/action-items`,
+      {
+        method: "PUT",
+        body: JSON.stringify({ action_items: actionItems }),
+      }
+    ),
+
   /** Ask Minuto — meetingId өгвөл зөвхөн тэр хурлаас, үгүй бол бүх хурлаас асууна */
   ask: (question: string, meetingId?: string, history: AskMessage[] = []) =>
     request<AskResponse>("/api/ask", {
