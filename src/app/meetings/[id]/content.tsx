@@ -32,6 +32,7 @@ import { Input } from "@/components/ui/input";
 import { LoadingState } from "@/components/ui/loading-state";
 import { ErrorState } from "@/components/ui/error-state";
 import { AskPanel, formatTimestamp } from "@/components/ask/ask-panel";
+import { AudioPlayer, type AudioPlayerRef } from "@/components/meeting/audio-player";
 import { api, friendlyError, friendlyErrorText } from "@/lib/api";
 import type { AskCitation, Meeting, MeetingMinutes, TranscriptSegment } from "@/lib/types";
 
@@ -150,7 +151,7 @@ export default function MeetingDetailContent() {
   const [replaceOpen, setReplaceOpen] = useState(false);
   const [replaceOpts, setReplaceOpts] = useState<ReplaceOptions>({ find: "", replacement: "", wholeWord: true });
   const [replaceFocus, setReplaceFocus] = useState(0);
-  const audioRef = useRef<HTMLAudioElement>(null);
+  const audioPlayerRef = useRef<AudioPlayerRef>(null);
   const searchParams = useSearchParams();
   // Боловсруулалт эхлүүлэх үеийн алдаа (upload/live хуудаснаас ?error=... гэж дамжина)
   const startError = searchParams.get("error");
@@ -181,10 +182,10 @@ export default function MeetingDetailContent() {
   const seekTo = useCallback((ms: number, segId: string | null) => {
     setTab("transcript");
     setActiveSeg(segId);
-    const audio = audioRef.current;
-    if (audio) {
-      audio.currentTime = ms / 1000;
-      audio.play().catch(() => {}); // автоматаар тоглуулахыг хориглосон бол зөвхөн гүйлгэнэ
+    const player = audioPlayerRef.current;
+    if (player) {
+      player.seekTo(ms / 1000);
+      player.play();
     }
     if (segId) {
       // таб солигдож бичвэр харагдсаны дараа гүйлгэнэ
@@ -470,26 +471,21 @@ export default function MeetingDetailContent() {
 
         {/* Audio Player */}
         {audioOk && (
-          <Card className="mb-6">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                  <Volume2 className="h-5 w-5 text-primary" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium">Аудио бичлэг</p>
-                  <audio
-                    ref={audioRef}
-                    controls
-                    preload="metadata"
-                    src={api.audioUrl(meetingId)}
-                    className="mt-2 w-full"
-                    onError={() => setAudioOk(false)}
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <AudioPlayer
+            ref={audioPlayerRef}
+            src={api.audioUrl(meetingId)}
+            onTimeUpdate={(time) => {
+              // Highlight active transcript segment during playback
+              const currentTimeMs = time * 1000;
+              const activeSegment = transcript.find(
+                (seg) => currentTimeMs >= seg.start_ms && currentTimeMs < seg.end_ms
+              );
+              if (activeSegment && activeSegment.id !== activeSeg) {
+                setActiveSeg(activeSegment.id);
+              }
+            }}
+            onError={() => setAudioOk(false)}
+          />
         )}
 
         <Tabs value={tab} onValueChange={(v) => setTab(String(v))} className="space-y-6">
