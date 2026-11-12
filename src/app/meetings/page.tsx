@@ -219,12 +219,12 @@ function MeetingsContent() {
               </p>
             </div>
             <div className="flex items-center gap-3">
-              <Link href="/upload" className={buttonVariants({ variant: "outline", className: "gap-2 rounded-full h-11 px-6" })}>
-                <Upload className="h-4 w-4" />
+              <Link href="/upload" className={buttonVariants({ variant: "outline", className: "gap-2 rounded-full h-12 px-7 text-base font-semibold" })}>
+                <Upload className="h-5 w-5" />
                 <span className="hidden sm:inline">Аудио оруулах</span>
               </Link>
-              <Button onClick={handleNewMeeting} className="gap-2 rounded-full bg-foreground text-background shadow-lg shadow-foreground/10 hover:opacity-90 h-11 px-6">
-                <Mic className="h-4 w-4" />
+              <Button onClick={handleNewMeeting} className="gap-2 rounded-full bg-foreground text-background shadow-lg shadow-foreground/10 hover:opacity-90 h-12 px-7 text-base font-semibold">
+                <Mic className="h-5 w-5" />
                 Шинэ хурал
               </Button>
             </div>
@@ -266,7 +266,7 @@ function MeetingsContent() {
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="h-11 rounded-full border border-border/60 bg-background px-4 text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  className="h-12 rounded-full border border-border/60 bg-background px-5 text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
                 >
                   <option value="all">Бүх төлөв</option>
                   <option value="completed">Дууссан</option>
@@ -277,7 +277,7 @@ function MeetingsContent() {
                 <select
                   value={sortField}
                   onChange={(e) => setSortField(e.target.value as SortField)}
-                  className="h-11 rounded-full border border-border/60 bg-background px-4 text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  className="h-12 rounded-full border border-border/60 bg-background px-5 text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
                 >
                   <option value="date">Огноогоор</option>
                   <option value="title">Гарчигаар</option>
@@ -288,7 +288,7 @@ function MeetingsContent() {
                   size="icon"
                   onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
                   title={sortOrder === "asc" ? "Өсөх" : "Буурах"}
-                  className="h-11 w-11 rounded-full border-border/60 shadow-sm"
+                  className="h-12 w-12 rounded-full border-border/60 shadow-sm"
                 >
                   {sortOrder === "asc" ? <SortAsc className="h-4 w-4" /> : <SortDesc className="h-4 w-4" />}
                 </Button>
@@ -297,7 +297,7 @@ function MeetingsContent() {
                   size="sm"
                   onClick={() => setShowArchived(!showArchived)}
                   title={showArchived ? "Идэвхтэй хурлууд руу буцах" : "Архивласан хурлуудыг харуулах"}
-                  className="rounded-full gap-1.5 h-11 px-4"
+                  className="rounded-full gap-1.5 h-12 px-5"
                 >
                   {showArchived ? (
                     <>
@@ -317,7 +317,7 @@ function MeetingsContent() {
                     size="icon"
                     onClick={() => setViewMode("grid")}
                     title="Grid view"
-                    className="h-10 w-10 rounded-full"
+                    className="h-11 w-11 rounded-full"
                   >
                     <LayoutGrid className="h-4 w-4" />
                   </Button>
@@ -326,7 +326,7 @@ function MeetingsContent() {
                     size="icon"
                     onClick={() => setViewMode("list")}
                     title="List view"
-                    className="h-10 w-10 rounded-full"
+                    className="h-11 w-11 rounded-full"
                   >
                     <List className="h-4 w-4" />
                   </Button>

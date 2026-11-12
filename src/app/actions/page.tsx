@@ -211,9 +211,8 @@ export default function ActionsPage() {
                 <Button
                   key={f}
                   variant={filter === f ? "default" : "outline"}
-                  size="sm"
                   onClick={() => setFilter(f)}
-                  className="rounded-full"
+                  className="rounded-full h-11 px-5 text-sm font-medium"
                 >
                   {f === "all" && "Бүгд"}
                   {f === "open" && "Хүлээгдэж буй"}

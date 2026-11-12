@@ -183,8 +183,8 @@ export default function WorkspacesPage() {
                 Багийн хамтын ажиллагааны орон зай
               </p>
             </div>
-            <Button onClick={() => setShowCreate(true)} className="gap-2 rounded-full bg-foreground text-background shadow-lg shadow-foreground/10 hover:opacity-90 h-11 px-6">
-              <Plus className="h-4 w-4" />
+            <Button onClick={() => setShowCreate(true)} className="gap-2 rounded-full bg-foreground text-background shadow-lg shadow-foreground/10 hover:opacity-90 h-12 px-7 text-base font-semibold">
+              <Plus className="h-5 w-5" />
               Шинэ workspace
             </Button>
           </div>

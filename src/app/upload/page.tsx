@@ -267,14 +267,14 @@ function UploadContent() {
                     variant="outline"
                     onClick={clearFile}
                     disabled={uploading}
-                    className="rounded-full px-6"
+                    className="rounded-full h-12 px-7 text-base font-semibold"
                   >
                     Цуцлах
                   </Button>
                   <Button
                     onClick={handleUpload}
                     disabled={uploading}
-                    className="flex-1 gap-2 rounded-full bg-foreground text-background hover:bg-foreground/90"
+                    className="flex-1 gap-2 rounded-full bg-foreground text-background shadow-lg shadow-foreground/10 hover:opacity-90 h-12 px-7 text-base font-semibold"
                   >
                     {uploading ? (
                       <>
@@ -283,7 +283,7 @@ function UploadContent() {
                       </>
                     ) : (
                       <>
-                        <Upload className="h-4 w-4" />
+                        <Upload className="h-5 w-5" />
                         Оруулах
                       </>
                     )}
