@@ -377,6 +377,13 @@ export const api = {
   deleteProject: (workspaceId: string, projectId: string) =>
     request<void>(`/api/workspaces/${workspaceId}/projects/${projectId}`, { method: "DELETE" }),
 
+  /** Профайл шинэчлэх */
+  updateProfile: (data: { name?: string }) =>
+    request<{ id: string; email: string; name: string | null }>("/api/auth/me", {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    }),
+
   /** DOCX-ийг татна. Хурлын бичиг үүсээгүй бол серверийн JSON-ийг харуулахын оронд алдаа шиднэ. */
   downloadDocx: async (id: string) => {
     const res = await fetch(`${API_BASE}/api/meetings/${id}/export.docx`, { headers: authHeaders() });
