@@ -299,6 +299,84 @@ export const api = {
   deleteTemplate: (id: string) =>
     request<void>(`/api/templates/${id}`, { method: "DELETE" }),
 
+  /** Бүх workspace жагсаах */
+  listWorkspaces: () =>
+    request<Array<{
+      id: string;
+      name: string;
+      description: string | null;
+      workspace_type: string;
+      owner_id: string;
+      role: string;
+    }>>("/api/workspaces"),
+
+  /** Шинэ workspace үүсгэх */
+  createWorkspace: (data: { name: string; description?: string }) =>
+    request<{
+      id: string;
+      name: string;
+      description: string | null;
+      workspace_type: string;
+      owner_id: string;
+      role: string;
+    }>("/api/workspaces", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
+  /** Workspace-ийн гишүүд жагсаах */
+  listWorkspaceMembers: (workspaceId: string) =>
+    request<Array<{
+      user_id: string;
+      email: string;
+      name: string | null;
+      role: string;
+      joined_at: string | null;
+    }>>(`/api/workspaces/${workspaceId}/members`),
+
+  /** Гишүүн урих */
+  inviteWorkspaceMember: (workspaceId: string, email: string, role: string = "viewer") =>
+    request<{
+      user_id: string;
+      email: string;
+      name: string | null;
+      role: string;
+    }>(`/api/workspaces/${workspaceId}/invite`, {
+      method: "POST",
+      body: JSON.stringify({ email, role }),
+    }),
+
+  /** Гишүүн хасах */
+  removeWorkspaceMember: (workspaceId: string, userId: string) =>
+    request<void>(`/api/workspaces/${workspaceId}/members/${userId}`, { method: "DELETE" }),
+
+  /** Workspace-ийн project-ууд жагсаах */
+  listProjects: (workspaceId: string) =>
+    request<Array<{
+      id: string;
+      name: string;
+      description: string | null;
+      color: string;
+      workspace_id: string;
+    }>>(`/api/workspaces/${workspaceId}/projects`),
+
+  /** Project үүсгэх */
+  createProject: (workspaceId: string, data: { name: string; description?: string; color?: string }) =>
+    request<{
+      id: string;
+      name: string;
+      description: string | null;
+      color: string;
+      workspace_id: string;
+    }>(`/api/workspaces/${workspaceId}/projects`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
+  /** Project устгах */
+  deleteProject: (workspaceId: string, projectId: string) =>
+    request<void>(`/api/workspaces/${workspaceId}/projects/${projectId}`, { method: "DELETE" }),
+
   /** DOCX-ийг татна. Хурлын бичиг үүсээгүй бол серверийн JSON-ийг харуулахын оронд алдаа шиднэ. */
   downloadDocx: async (id: string) => {
     const res = await fetch(`${API_BASE}/api/meetings/${id}/export.docx`, { headers: authHeaders() });
