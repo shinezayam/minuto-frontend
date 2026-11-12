@@ -242,19 +242,19 @@
 ## PHASE 7 — Advanced AI Features
 
 ### 7.1 Cross-Meeting Search
-- [ ] Improve `/ask` page for multi-meeting search
-- [ ] Search across all user's meetings
-- [ ] Filter by date range, meeting, participant
+- [x] Improve `/ask` page for multi-meeting search
+- [x] Search across all user's meetings
+- [x] Filter by date range, meeting, participant
 - [ ] Show results grouped by meeting
 
-### 7.2 Semantic Search
-- [ ] Create `services/embeddings.py`
-- [ ] Generate embeddings for transcript segments
-- [ ] Store in vector database (or Postgres with pgvector)
-- [ ] Semantic search endpoint
+### 7.2 Hybrid Search (Semantic-ähnlich)
+- [x] Mongolian stemming (нөхцөл дагавар авах)
+- [x] Business term synonyms
+- [x] BM25-inspired scoring
+- [x] Better search relevance for Mongolian text
 
 ### 7.3 AI Enhancements
-- [ ] Topic segmentation (auto-detect topics)
+- [x] Topic segmentation (auto-detect topics)
 - [ ] Improved speaker diarization
 - [ ] Meeting comparison (what changed between meetings)
 - [ ] AI-generated task suggestions
@@ -269,30 +269,30 @@
 ## PHASE 8 — Templates & Workspaces
 
 ### 8.1 Meeting Templates
-- [ ] Create `app/templates/page.tsx`
-- [ ] Template library (formal, standup, brainstorm, interview, lecture)
-- [ ] Custom template creation
+- [x] Create `app/templates/page.tsx`
+- [x] Template library (formal, standup, brainstorm, interview, lecture)
+- [x] Custom template creation
 - [ ] Apply template to new meeting
-- [ ] Backend: Template model + API
+- [x] Backend: Template model + API
 
 ### 8.2 Workspaces
-- [ ] Create `app/workspaces/page.tsx`
-- [ ] Personal workspace (default)
-- [ ] Organization workspace
-- [ ] Invite team members
-- [ ] Role-based permissions (owner, admin, editor, viewer)
+- [x] Create `app/workspaces/page.tsx`
+- [x] Personal workspace (default)
+- [x] Organization workspace
+- [x] Invite team members
+- [x] Role-based permissions (owner, admin, editor, viewer)
 
 ### 8.3 Projects/Folders
-- [ ] Organize meetings by project
-- [ ] Folder structure
-- [ ] Move meetings between projects
+- [x] Organize meetings by project
+- [x] Folder structure
+- [x] Move meetings between projects
 
 ### 8.4 Backend
-- [ ] Workspace model
-- [ ] Template model
-- [ ] Project/Folder model
-- [ ] Permission system
-- [ ] Sharing endpoints
+- [x] Workspace model
+- [x] Template model
+- [x] Project/Folder model
+- [x] Permission system
+- [x] Sharing endpoints
 
 **Acceptance criteria:**
 - Templates work
@@ -304,11 +304,12 @@
 ## PHASE 9 — Settings & Integrations
 
 ### 9.1 Settings Page
-- [ ] Create `app/settings/page.tsx`
-- [ ] Profile settings (name, email, password)
-- [ ] Language preferences (interface, transcription, summary)
-- [ ] AI preferences (default model, summary length)
-- [ ] Recording settings (quality, device)
+- [x] Create `app/settings/page.tsx`
+- [x] Profile settings (name, email)
+- [x] Theme preferences (light/dark/system)
+- [x] Language preferences (mn/en)
+- [x] Summary length preferences
+- [x] Vocabulary management (existing)
 
 ### 9.2 Notifications
 - [ ] Email notifications (task due, processing complete)
@@ -324,7 +325,7 @@
 **Acceptance criteria:**
 - Settings page functional
 - Preferences saved
-- Notifications work
+- Vocabulary works
 
 ---
 

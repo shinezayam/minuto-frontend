@@ -328,6 +328,69 @@ All tasks finished:
 
 ---
 
+## 2026-11-12 — Phase 7: Advanced AI Features (In Progress)
+
+### Phase 7.1: Cross-Meeting Search ✅
+- Filter panel UI on /ask page
+- Date range filter (from/to)
+- Participant filter
+- Backend: date_from, date_to, meeting_ids, participant filters
+
+### Phase 7.2: Hybrid Search ✅
+- Mongolian stemming (нөхцөл дагавар авах)
+- Business term synonyms (хурал/уулзалт, шийдвэр/тогтоол, даалгавар/үүрэг)
+- BM25-inspired scoring (coverage + density)
+- Better search relevance for Mongolian text
+
+### Phase 7.3: AI Enhancements (Topic Segmentation) ✅
+- Create topic_segmentation.py service
+- LLM-powered topic detection from transcript
+- POST /api/meetings/{id}/topics endpoint
+- Frontend: "Сэдвүүд үүсгэх" button in transcript tab
+- Display topics with title, description, timestamps
+- Click topic to seek to that segment in transcript/audio
+
+---
+
+## 2026-11-12 — Phase 8: Templates & Workspaces (In Progress)
+
+### Phase 8.1: Meeting Templates ✅
+- MeetingTemplate model with sections, custom_prompt, icon
+- Default templates: Албан хурал, Daily Standup, Brainstorming, Ярилцлага, Сургалт, Төслийн төлөв
+- Templates service with CRUD operations
+- API endpoints: GET/POST /api/templates, DELETE /api/templates/{id}
+- /templates page with template library
+- Create custom templates with name, description, icon, sections
+
+### Phase 8.2: Workspaces ✅
+- Workspace model (personal/organization)
+- WorkspaceMember model with role-based access (owner/admin/editor/viewer)
+- Personal workspace auto-created for each user
+- Organization workspace creation
+- Invite members by email
+- Remove members
+- Role-based permissions
+
+### Phase 8.3: Projects/Folders ✅
+- Project model for organizing meetings
+- Create projects with colors
+- Delete projects
+- Workspace-ийн дотор project-ууд
+- Role-based access (admin+ can manage)
+
+---
+
+## 2026-11-12 — Phase 9: Settings (In Progress)
+
+### Phase 9.1: Settings Page ✅
+- Tabbed interface (Profile, Preferences, Vocabulary)
+- Profile: edit name, view email
+- Preferences: theme (light/dark/system), language (mn/en), summary length
+- Save preferences to localStorage
+- updateProfile API function
+
+### Next: Phase 10 — Production Readiness
+
 ## Known Limitations
 
 1. **Speaker diarization is basic** — Per-segment labels merged by LLM, not true diarization
