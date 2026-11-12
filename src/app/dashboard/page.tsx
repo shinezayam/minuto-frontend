@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Mic, Clock, Calendar, Trash2, FileText, Download, Upload, Search, Filter, SortAsc, SortDesc, BarChart3, Pencil, LayoutGrid, List, Archive, ArchiveRestore } from "lucide-react";
+import { Mic, Clock, Calendar, Trash2, FileText, Download, Upload, Search, Filter, SortAsc, SortDesc, BarChart3, Pencil, LayoutGrid, List, Archive, ArchiveRestore, Users } from "lucide-react";
 import { AppShell } from "@/components/layout/app-shell";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -161,6 +161,14 @@ function DashboardContent() {
             <Button onClick={handleNewMeeting} className="gap-2 rounded-full bg-foreground text-background shadow-lg shadow-foreground/10 hover:opacity-90 h-12 px-7 text-base font-semibold">
               <Mic className="h-5 w-5" />
               Шинэ хурал
+            </Button>
+            {/* Quick Record Button */}
+            <Button
+              onClick={() => router.push("/meetings/new/live")}
+              className="gap-2 rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/20 hover:bg-primary/90 h-12 px-5 text-base font-semibold sm:hidden"
+              title="Шууд бичих"
+            >
+              <Mic className="h-5 w-5" />
             </Button>
           </div>
         </div>
@@ -487,6 +495,12 @@ function MeetingCard({
                 <span className="flex items-center gap-1.5">
                   <Clock className="h-3.5 w-3.5" />
                   {formatDuration(meeting.duration_ms)}
+                </span>
+              )}
+              {meeting.participants && meeting.participants.length > 0 && (
+                <span className="flex items-center gap-1.5">
+                  <Users className="h-3.5 w-3.5" />
+                  {meeting.participants.length}
                 </span>
               )}
             </div>
