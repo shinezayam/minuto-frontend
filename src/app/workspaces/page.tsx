@@ -174,16 +174,16 @@ export default function WorkspacesPage() {
   return (
     <AuthGuard>
       <AppShell>
-        <main className="mx-auto max-w-6xl px-4 py-8">
+        <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
           {/* Header */}
-          <div className="mb-6 flex items-center justify-between">
+          <div className="mb-8 flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold">Workspace-ууд</h1>
-              <p className="mt-1 text-sm text-muted-foreground">
+              <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">Workspace-ууд</h1>
+              <p className="mt-2 text-base text-muted-foreground">
                 Багийн хамтын ажиллагааны орон зай
               </p>
             </div>
-            <Button onClick={() => setShowCreate(true)} className="gap-2">
+            <Button onClick={() => setShowCreate(true)} className="gap-2 rounded-full bg-foreground text-background shadow-lg shadow-foreground/10 hover:opacity-90 h-11 px-6">
               <Plus className="h-4 w-4" />
               Шинэ workspace
             </Button>
@@ -191,10 +191,10 @@ export default function WorkspacesPage() {
 
           {/* Create dialog */}
           {showCreate && (
-            <Card className="mb-6">
+            <Card className="mb-8 rounded-2xl border-border/60 shadow-sm">
               <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle>Шинэ workspace үүсгэх</CardTitle>
-                <Button variant="ghost" size="icon" onClick={() => setShowCreate(false)}>
+                <CardTitle className="font-display text-xl">Шинэ workspace үүсгэх</CardTitle>
+                <Button variant="ghost" size="icon" onClick={() => setShowCreate(false)} className="rounded-full">
                   <X className="h-4 w-4" />
                 </Button>
               </CardHeader>

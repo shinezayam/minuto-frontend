@@ -102,16 +102,16 @@ export default function TemplatesPage() {
   return (
     <AuthGuard>
       <AppShell>
-        <main className="mx-auto max-w-5xl px-4 py-8">
+        <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
           {/* Header */}
-          <div className="mb-6 flex items-center justify-between">
+          <div className="mb-8 flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold">Загварууд</h1>
-              <p className="mt-1 text-sm text-muted-foreground">
+              <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">Загварууд</h1>
+              <p className="mt-2 text-base text-muted-foreground">
                 Хурлын бичгийн загваруудыг удирдах
               </p>
             </div>
-            <Button onClick={() => setShowCreate(true)} className="gap-2">
+            <Button onClick={() => setShowCreate(true)} className="gap-2 rounded-full bg-foreground text-background shadow-lg shadow-foreground/10 hover:opacity-90 h-11 px-6">
               <Plus className="h-4 w-4" />
               Шинэ загвар
             </Button>
@@ -119,41 +119,43 @@ export default function TemplatesPage() {
 
           {/* Create dialog */}
           {showCreate && (
-            <Card className="mb-6">
+            <Card className="mb-8 rounded-2xl border-border/60 shadow-sm">
               <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle>Шинэ загвар үүсгэх</CardTitle>
-                <Button variant="ghost" size="icon" onClick={() => setShowCreate(false)}>
+                <CardTitle className="font-display text-xl">Шинэ загвар үүсгэх</CardTitle>
+                <Button variant="ghost" size="icon" onClick={() => setShowCreate(false)} className="rounded-full">
                   <X className="h-4 w-4" />
                 </Button>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-5">
                 <div>
-                  <label className="mb-1 block text-sm font-medium">Нэр</label>
+                  <label className="mb-1.5 block text-sm font-medium">Нэр</label>
                   <Input
                     value={newName}
                     onChange={(e) => setNewName(e.target.value)}
                     placeholder="Жишээ: Төслийн уулзалт"
+                    className="h-10 rounded-full border-border/60"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium">Тайлбар</label>
+                  <label className="mb-1.5 block text-sm font-medium">Тайлбар</label>
                   <Input
                     value={newDescription}
                     onChange={(e) => setNewDescription(e.target.value)}
                     placeholder="Загварын товч тайлбар"
+                    className="h-10 rounded-full border-border/60"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium">Тэмдэг</label>
+                  <label className="mb-1.5 block text-sm font-medium">Тэмдэг</label>
                   <div className="flex gap-2">
                     {ICONS.map((icon) => (
                       <button
                         key={icon}
                         onClick={() => setNewIcon(icon)}
-                        className={`flex h-10 w-10 items-center justify-center rounded-lg border text-xl transition-colors ${
+                        className={`flex h-11 w-11 items-center justify-center rounded-xl border text-xl transition-colors ${
                           newIcon === icon
-                            ? "border-primary bg-primary/10"
-                            : "border-border hover:bg-muted"
+                            ? "border-primary bg-primary/10 ring-1 ring-primary/20"
+                            : "border-border/60 hover:bg-muted"
                         }`}
                       >
                         {icon}
@@ -162,15 +164,15 @@ export default function TemplatesPage() {
                   </div>
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium">Хэсгүүд</label>
+                  <label className="mb-1.5 block text-sm font-medium">Хэсгүүд</label>
                   <div className="flex flex-wrap gap-2">
                     {Object.entries(SECTION_LABELS).map(([key, label]) => (
                       <button
                         key={key}
                         onClick={() => toggleSection(key)}
-                        className={`flex items-center gap-1 rounded-full px-3 py-1 text-sm transition-colors ${
+                        className={`flex items-center gap-1 rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
                           newSections.includes(key)
-                            ? "bg-primary text-primary-foreground"
+                            ? "bg-foreground text-background"
                             : "bg-muted text-muted-foreground hover:bg-muted/80"
                         }`}
                       >
@@ -216,31 +218,33 @@ export default function TemplatesPage() {
               description="Эхний загвараа үүсгэнэ үү"
             />
           ) : (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {templates.map((tmpl) => (
-                <Card key={tmpl.id} className="relative">
+                <Card key={tmpl.id} className="relative rounded-2xl border-border/60 shadow-sm transition-all duration-200 hover:shadow-lg hover:border-primary/20">
                   <CardContent className="p-5">
-                    <div className="mb-3 flex items-start justify-between">
+                    <div className="mb-4 flex items-start justify-between">
                       <div className="flex items-center gap-3">
-                        <span className="text-3xl">{tmpl.icon}</span>
+                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-2xl">
+                          {tmpl.icon}
+                        </div>
                         <div>
-                          <h3 className="font-semibold">{tmpl.name}</h3>
+                          <h3 className="font-display text-base font-bold tracking-tight">{tmpl.name}</h3>
                           {tmpl.description && (
-                            <p className="text-xs text-muted-foreground">{tmpl.description}</p>
+                            <p className="mt-0.5 text-xs text-muted-foreground">{tmpl.description}</p>
                           )}
                         </div>
                       </div>
                       {tmpl.is_default && (
-                        <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+                        <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground ring-1 ring-inset ring-muted-foreground/10">
                           Үндсэн
                         </span>
                       )}
                     </div>
-                    <div className="flex flex-wrap gap-1">
+                    <div className="flex flex-wrap gap-1.5">
                       {tmpl.sections.map((section) => (
                         <span
                           key={section}
-                          className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground"
+                          className="rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground"
                         >
                           {SECTION_LABELS[section] || section}
                         </span>
@@ -250,7 +254,7 @@ export default function TemplatesPage() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="absolute right-2 top-2 h-8 w-8 text-muted-foreground hover:text-destructive"
+                        className="absolute right-3 top-3 h-8 w-8 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                         onClick={() => handleDelete(tmpl.id)}
                       >
                         <Trash2 className="h-4 w-4" />

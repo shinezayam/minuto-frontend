@@ -158,52 +158,52 @@ export default function ActionsPage() {
   return (
     <AuthGuard>
       <AppShell>
-        <main className="mx-auto max-w-5xl px-4 py-8">
+        <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
           {/* Header */}
-          <div className="mb-6">
-            <h1 className="text-3xl font-bold">Даалгаврууд</h1>
-            <p className="mt-1 text-sm text-muted-foreground">
+          <div className="mb-8">
+            <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">Даалгаврууд</h1>
+            <p className="mt-2 text-base text-muted-foreground">
               Бүх хурлын даалгавруудыг нэг дор харна уу
             </p>
           </div>
 
           {/* Stats */}
-          <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
-            <Card>
-              <CardContent className="p-4">
-                <p className="text-sm text-muted-foreground">Нийт</p>
-                <p className="text-2xl font-bold">{stats.total}</p>
+          <div className="mb-8 grid grid-cols-2 gap-5 sm:grid-cols-4">
+            <Card className="rounded-2xl border-border/60 shadow-sm">
+              <CardContent className="p-5">
+                <p className="text-sm font-medium text-muted-foreground">Нийт</p>
+                <p className="mt-1 font-display text-3xl font-bold tracking-tight">{stats.total}</p>
               </CardContent>
             </Card>
-            <Card>
-              <CardContent className="p-4">
-                <p className="text-sm text-muted-foreground">Хүлээгдэж буй</p>
-                <p className="text-2xl font-bold text-blue-600">{stats.open}</p>
+            <Card className="rounded-2xl border-border/60 shadow-sm">
+              <CardContent className="p-5">
+                <p className="text-sm font-medium text-muted-foreground">Хүлээгдэж буй</p>
+                <p className="mt-1 font-display text-3xl font-bold tracking-tight text-blue-600 dark:text-blue-400">{stats.open}</p>
               </CardContent>
             </Card>
-            <Card>
-              <CardContent className="p-4">
-                <p className="text-sm text-muted-foreground">Дууссан</p>
-                <p className="text-2xl font-bold text-green-600">{stats.done}</p>
+            <Card className="rounded-2xl border-border/60 shadow-sm">
+              <CardContent className="p-5">
+                <p className="text-sm font-medium text-muted-foreground">Дууссан</p>
+                <p className="mt-1 font-display text-3xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">{stats.done}</p>
               </CardContent>
             </Card>
-            <Card>
-              <CardContent className="p-4">
-                <p className="text-sm text-muted-foreground">Хугацаа хэтэрсэн</p>
-                <p className="text-2xl font-bold text-red-600">{stats.overdue}</p>
+            <Card className="rounded-2xl border-border/60 shadow-sm">
+              <CardContent className="p-5">
+                <p className="text-sm font-medium text-muted-foreground">Хугацаа хэтэрсэн</p>
+                <p className="mt-1 font-display text-3xl font-bold tracking-tight text-red-600 dark:text-red-400">{stats.overdue}</p>
               </CardContent>
             </Card>
           </div>
 
           {/* Filters */}
-          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 placeholder="Хайх..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
+                className="h-11 rounded-full border-border/60 pl-10 shadow-sm"
               />
             </div>
             <div className="flex gap-2">
@@ -213,6 +213,7 @@ export default function ActionsPage() {
                   variant={filter === f ? "default" : "outline"}
                   size="sm"
                   onClick={() => setFilter(f)}
+                  className="rounded-full"
                 >
                   {f === "all" && "Бүгд"}
                   {f === "open" && "Хүлээгдэж буй"}

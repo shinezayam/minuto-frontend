@@ -66,23 +66,23 @@ export default function SettingsPage() {
     <AuthGuard>
       <AppShell>
         <main className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
-          <div className="mb-6">
-            <h1 className="text-3xl font-bold">Тохиргоо</h1>
-            <p className="mt-1 text-sm text-muted-foreground">
+          <div className="mb-8">
+            <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">Тохиргоо</h1>
+            <p className="mt-2 text-base text-muted-foreground">
               Профайл, тохируулга, толь бичиг
             </p>
           </div>
 
           {/* Tabs */}
-          <div className="mb-6 flex gap-1 rounded-lg bg-muted p-1">
+          <div className="mb-8 flex gap-2 rounded-full border border-border/60 bg-background p-1.5">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                className={`flex flex-1 items-center justify-center gap-2 rounded-full px-4 py-2.5 text-sm font-medium transition-all ${
                   activeTab === tab.id
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "bg-foreground text-background shadow-md"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                 }`}
               >
                 <tab.icon className="h-4 w-4" />
@@ -93,21 +93,21 @@ export default function SettingsPage() {
 
           {/* Profile Tab */}
           {activeTab === "profile" && (
-            <Card>
+            <Card className="rounded-2xl border-border/60 shadow-sm">
               <CardHeader>
-                <CardTitle>Профайл</CardTitle>
+                <CardTitle className="font-display text-xl">Профайл</CardTitle>
                 <CardDescription>Хувийн мэдээлэл</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-5">
                 <div>
-                  <label className="mb-1 block text-sm font-medium">Имэйл</label>
-                  <Input value={user?.email || ""} disabled className="bg-muted" />
-                  <p className="mt-1 text-xs text-muted-foreground">
+                  <label className="mb-1.5 block text-sm font-medium">Имэйл</label>
+                  <Input value={user?.email || ""} disabled className="h-10 rounded-full bg-muted border-border/60" />
+                  <p className="mt-1.5 text-xs text-muted-foreground">
                     Имэйл өөрчлөх боломжгүй
                   </p>
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium">Нэр</label>
+                  <label className="mb-1.5 block text-sm font-medium">Нэр</label>
                   <Input
                     value={name}
                     onChange={(e) => setName(e.target.value)}

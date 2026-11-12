@@ -34,14 +34,22 @@ export default function AskPage() {
   return (
     <AuthGuard>
       <AppShell>
-        <main className="mx-auto flex h-[calc(100dvh-4rem)] max-w-3xl flex-col px-4 py-6">
+        <main className="mx-auto flex h-[calc(100dvh-4rem)] max-w-3xl flex-col px-4 py-8 sm:px-6 lg:px-8">
+          {/* Header */}
+          <div className="mb-6">
+            <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">AI хайлт</h1>
+            <p className="mt-2 text-base text-muted-foreground">
+              Бүх хурлын бичвэрээс хайх
+            </p>
+          </div>
+
           {/* Filter toggle */}
-          <div className="mb-3 flex items-center gap-2">
+          <div className="mb-4 flex items-center gap-2">
             <Button
               variant={showFilters || hasActiveFilters ? "default" : "outline"}
               size="sm"
               onClick={() => setShowFilters(!showFilters)}
-              className="gap-1.5"
+              className="gap-1.5 rounded-full h-9"
             >
               <Filter className="h-3.5 w-3.5" />
               Шүүлтүүр
@@ -52,7 +60,7 @@ export default function AskPage() {
               )}
             </Button>
             {hasActiveFilters && (
-              <Button variant="ghost" size="sm" onClick={clearFilters} className="gap-1 text-muted-foreground">
+              <Button variant="ghost" size="sm" onClick={clearFilters} className="gap-1 rounded-full text-muted-foreground">
                 <X className="h-3.5 w-3.5" />
                 Цэвэрлэх
               </Button>
@@ -61,35 +69,35 @@ export default function AskPage() {
 
           {/* Filter panel */}
           {showFilters && (
-            <div className="mb-4 rounded-xl border border-border bg-card p-4">
-              <div className="grid gap-3 sm:grid-cols-2">
+            <div className="mb-6 rounded-2xl border border-border/60 bg-card p-5 shadow-sm">
+              <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="mb-1 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                    <Calendar className="h-3 w-3" />
+                  <label className="mb-1.5 flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
+                    <Calendar className="h-3.5 w-3.5" />
                     Эхлэх огноо
                   </label>
                   <Input
                     type="date"
                     value={filters.date_from || ""}
                     onChange={(e) => setFilters({ ...filters, date_from: e.target.value || undefined })}
-                    className="h-9"
+                    className="h-10 rounded-full border-border/60"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                    <Calendar className="h-3 w-3" />
+                  <label className="mb-1.5 flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
+                    <Calendar className="h-3.5 w-3.5" />
                     Дуусах огноо
                   </label>
                   <Input
                     type="date"
                     value={filters.date_to || ""}
                     onChange={(e) => setFilters({ ...filters, date_to: e.target.value || undefined })}
-                    className="h-9"
+                    className="h-10 rounded-full border-border/60"
                   />
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="mb-1 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                    <Users className="h-3 w-3" />
+                  <label className="mb-1.5 flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
+                    <Users className="h-3.5 w-3.5" />
                     Оролцогч
                   </label>
                   <Input
@@ -97,7 +105,7 @@ export default function AskPage() {
                     placeholder="Жишээ: Бат, Гүрдаваа..."
                     value={filters.participant || ""}
                     onChange={(e) => setFilters({ ...filters, participant: e.target.value || undefined })}
-                    className="h-9"
+                    className="h-10 rounded-full border-border/60"
                   />
                 </div>
               </div>
