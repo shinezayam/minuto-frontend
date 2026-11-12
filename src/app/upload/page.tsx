@@ -138,14 +138,14 @@ function UploadContent() {
   return (
     <AppShell>
       <main className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold">Аудио файл оруулах</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
+        <div className="mb-8">
+          <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">Аудио файл оруулах</h1>
+          <p className="mt-2 text-base text-muted-foreground">
             Аудио файлаа оруулж, AI-р бичвэр болон хурлын бичиг үүсгээрэй
           </p>
         </div>
 
-        <Card className="overflow-hidden">
+        <Card className="overflow-hidden rounded-2xl border-border/60 shadow-sm">
           <CardContent className="p-6">
             {!file ? (
               <div
@@ -153,18 +153,18 @@ function UploadContent() {
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
                 onClick={() => fileInputRef.current?.click()}
-                className={`flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed p-12 text-center transition-all ${
+                className={`flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed p-12 text-center transition-all ${
                   isDragging
                     ? "border-primary bg-primary/5 scale-[1.02]"
-                    : "border-border hover:border-primary/50 hover:bg-muted/50"
+                    : "border-border/60 hover:border-primary/50 hover:bg-muted/50"
                 }`}
               >
-                <div className={`flex h-20 w-20 items-center justify-center rounded-full transition-all ${
+                <div className={`flex h-20 w-20 items-center justify-center rounded-2xl transition-all ${
                   isDragging ? "bg-primary/20 scale-110" : "bg-primary/10"
                 }`}>
                   <Upload className={`h-10 w-10 transition-all ${isDragging ? "text-primary scale-110" : "text-primary"}`} />
                 </div>
-                <h3 className="mt-4 text-lg font-semibold">
+                <h3 className="mt-4 font-display text-lg font-bold">
                   {isDragging ? "Тавиарай!" : "Аудио файл сонгох"}
                 </h3>
                 <p className="mt-2 text-sm text-muted-foreground">
