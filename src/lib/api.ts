@@ -226,6 +226,19 @@ export const api = {
       }
     ),
 
+  /** Сэдвүүд үүсгэх */
+  generateTopics: (id: string) =>
+    request<{
+      meeting_id: string;
+      topics: Array<{
+        title: string;
+        description: string;
+        start_ms: number;
+        end_ms: number;
+        segment_ids: string[];
+      }>;
+    }>(`/api/meetings/${id}/topics`, { method: "POST" }),
+
   /** Ask Minuto — meetingId өгвөл зөвхөн тэр хурлаас, үгүй бол бүх хурлаас асууна */
   ask: (question: string, meetingId?: string, history: AskMessage[] = [], filters?: {
     date_from?: string;

@@ -161,6 +161,14 @@ export default function MeetingDetailContent() {
     source_segment_ids?: string[];
   }>>([]);
   const [editingActionItem, setEditingActionItem] = useState<number | null>(null);
+  const [topics, setTopics] = useState<Array<{
+    title: string;
+    description: string;
+    start_ms: number;
+    end_ms: number;
+    segment_ids: string[];
+  }>>([]);
+  const [generatingTopics, setGeneratingTopics] = useState(false);
   const audioPlayerRef = useRef<AudioPlayerRef>(null);
   const searchParams = useSearchParams();
   // Боловсруулалт эхлүүлэх үеийн алдаа (upload/live хуудаснаас ?error=... гэж дамжина)
@@ -337,6 +345,18 @@ export default function MeetingDetailContent() {
   const copySummary = () => {
     if (!minutes) return;
     navigator.clipboard.writeText(minutes.summary);
+  };
+
+  const handleGenerateTopics = async () => {
+    setGeneratingTopics(true);
+    try {
+      const result = await api.generateTopics(meetingId);
+      setTopics(result.topics);
+    } catch (err) {
+      setError(friendlyError(err));
+    } finally {
+      setGeneratingTopics(false);
+    }
   };
 
   const saveTitle = async () => {
@@ -886,15 +906,30 @@ export default function MeetingDetailContent() {
                 <CardTitle>Бичвэр</CardTitle>
                 <div className="flex items-center gap-2">
                   {transcript.length > 0 && (
-                    <Button
-                      variant={transcriptEditMode ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setTranscriptEditMode(!transcriptEditMode)}
-                      disabled={isProcessing}
-                    >
-                      <Pencil className="h-4 w-4 mr-1" />
-                      {transcriptEditMode ? "Засварлах горим" : "Засварлах"}
-                    </Button>
+                    <>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleGenerateTopics}
+                        disabled={isProcessing || generatingTopics}
+                      >
+                        {generatingTopics ? (
+                          <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                        ) : (
+                          <List className="h-4 w-4 mr-1" />
+                        )}
+                        {topics.length > 0 ? "Сэдвүүд шинэчлэх" : "Сэдвүүд үүсгэх"}
+                      </Button>
+                      <Button
+                        variant={transcriptEditMode ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setTranscriptEditMode(!transcriptEditMode)}
+                        disabled={isProcessing}
+                      >
+                        <Pencil className="h-4 w-4 mr-1" />
+                        {transcriptEditMode ? "Засварлах горим" : "Засварлах"}
+                      </Button>
+                    </>
                   )}
                   {transcript.length > 0 && !replaceOpen && !transcriptEditMode && (
                     <Button variant="outline" size="sm" onClick={() => setReplaceOpen(true)} disabled={isProcessing}>
@@ -905,6 +940,46 @@ export default function MeetingDetailContent() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-3">
+                {/* Topics section */}
+                {topics.length > 0 && (
+                  <div className="mb-4 rounded-lg border border-border bg-muted/30 p-4">
+                    <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold">
+                      <List className="h-4 w-4" />
+                      Сэдвүүд ({topics.length})
+                    </h3>
+                    <div className="space-y-2">
+                      {topics.map((topic, i) => (
+                        <button
+                          key={i}
+                          onClick={() => {
+                            const firstSegId = topic.segment_ids[0];
+                            if (firstSegId) {
+                              const seg = transcript.find((s) => s.id === firstSegId);
+                              if (seg) {
+                                seekTo(seg.start_ms, seg.id);
+                              }
+                            }
+                          }}
+                          className="flex w-full items-start gap-3 rounded-md border border-border bg-background p-3 text-left transition-colors hover:bg-muted/50"
+                        >
+                          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-medium text-primary">
+                            {i + 1}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="font-medium">{topic.title}</p>
+                            {topic.description && (
+                              <p className="mt-0.5 text-xs text-muted-foreground">{topic.description}</p>
+                            )}
+                            <p className="mt-1 text-xs text-muted-foreground">
+                              {formatTime(topic.start_ms)} - {formatTime(topic.end_ms)}
+                            </p>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {replaceOpen && transcript.length > 0 && (
                   <TranscriptReplacePanel
                     meetingId={meetingId}
