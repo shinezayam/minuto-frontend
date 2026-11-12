@@ -26,6 +26,8 @@ import { useTheme } from "@/hooks/use-theme";
 interface SidebarProps {
   collapsed?: boolean;
   onToggle?: () => void;
+  isMobile?: boolean;
+  mobileOpen?: boolean;
 }
 
 const NAV_ITEMS = [
@@ -37,7 +39,7 @@ const NAV_ITEMS = [
   { href: "/templates", label: "Загварууд", icon: FileText },
 ];
 
-export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
+export function Sidebar({ collapsed = false, onToggle, isMobile = false, mobileOpen = false }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const user = useAuth();
@@ -47,6 +49,13 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
   const handleLogout = () => {
     clearAuth();
     router.push("/login");
+  };
+
+  const handleNav = (href: string) => {
+    if (isMobile) {
+      onToggle?.();
+    }
+    router.push(href);
   };
 
   const toggleCollapse = () => {
@@ -65,18 +74,22 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
     }
     // /meetings - зөвхөн /meetings эсвэл /meetings/[id] (гэхдээ /meetings/new биш)
     if (href === "/meetings") {
-      return pathname === "/meetings" || 
+      return pathname === "/meetings" ||
         (pathname.startsWith("/meetings/") && !pathname.startsWith("/meetings/new"));
     }
     // Бусад - exact match эсвэл startsWith
     return pathname === href || pathname.startsWith(href + "/");
   };
 
+  const showLabelFooter = isMobile ? true : !isCollapsed;
+
   return (
     <aside
       className={cn(
         "fixed left-0 top-0 z-40 h-screen border-r border-border bg-background transition-all duration-200",
-        isCollapsed ? "w-16" : "w-60"
+        isMobile
+          ? cn("w-60", mobileOpen ? "translate-x-0" : "-translate-x-full")
+          : isCollapsed ? "w-16" : "w-60"
       )}
     >
       <div className="flex h-full flex-col">
@@ -107,22 +120,23 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
             {NAV_ITEMS.map((item) => {
               const Icon = item.icon;
               const active = isActive(item.href);
+              const showLabel = isMobile ? true : !isCollapsed;
               return (
                 <li key={item.href}>
-                  <Link
-                    href={item.href}
+                  <button
+                    onClick={() => handleNav(item.href)}
                     className={cn(
-                      "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                      "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                       active
                         ? "bg-primary/10 text-primary"
                         : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                      isCollapsed && "justify-center px-2"
+                      !showLabel && "justify-center px-2"
                     )}
-                    title={isCollapsed ? item.label : undefined}
+                    title={!showLabel ? item.label : undefined}
                   >
                     <Icon className="h-5 w-5 shrink-0" />
-                    {!isCollapsed && <span>{item.label}</span>}
-                  </Link>
+                    {showLabel && <span>{item.label}</span>}
+                  </button>
                 </li>
               );
             })}
@@ -133,33 +147,33 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
         <div className="border-t border-border px-3 py-4">
           <ul className="space-y-1">
             <li>
-              <Link
-                href="/settings"
+              <button
+                onClick={() => handleNav("/settings")}
                 className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
-                  isCollapsed && "justify-center px-2"
+                  "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
+                  !showLabelFooter && "justify-center px-2"
                 )}
-                title={isCollapsed ? "Тохиргоо" : undefined}
+                title={!showLabelFooter ? "Тохиргоо" : undefined}
               >
                 <Settings className="h-5 w-5 shrink-0" />
-                {!isCollapsed && <span>Тохиргоо</span>}
-              </Link>
+                {showLabelFooter && <span>Тохиргоо</span>}
+              </button>
             </li>
             <li>
               <button
                 onClick={toggleTheme}
                 className={cn(
                   "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
-                  isCollapsed && "justify-center px-2"
+                  !showLabelFooter && "justify-center px-2"
                 )}
-                title={isCollapsed ? (resolvedTheme === "dark" ? "Гэрэл горим" : "Харанхуй горим") : undefined}
+                title={!showLabelFooter ? (resolvedTheme === "dark" ? "Гэрэл горим" : "Харанхуй горим") : undefined}
               >
                 {resolvedTheme === "dark" ? (
                   <Sun className="h-5 w-5 shrink-0" />
                 ) : (
                   <Moon className="h-5 w-5 shrink-0" />
                 )}
-                {!isCollapsed && (
+                {showLabelFooter && (
                   <span>{resolvedTheme === "dark" ? "Гэрэл горим" : "Харанхуй горим"}</span>
                 )}
               </button>
@@ -170,13 +184,13 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
                   <div
                     className={cn(
                       "flex items-center gap-3 rounded-lg px-3 py-2 text-sm",
-                      isCollapsed && "justify-center px-2"
+                      !showLabelFooter && "justify-center px-2"
                     )}
                   >
                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10">
                       <User className="h-4 w-4 text-primary" />
                     </div>
-                    {!isCollapsed && (
+                    {showLabelFooter && (
                       <div className="min-w-0 flex-1">
                         <p className="truncate font-medium">{user.email}</p>
                       </div>
