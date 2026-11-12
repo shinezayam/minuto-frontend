@@ -213,17 +213,17 @@ function MeetingsContent() {
           {/* Header */}
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight">Миний хурлууд</h1>
-              <p className="mt-1 text-sm text-muted-foreground">
+              <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">Миний хурлууд</h1>
+              <p className="mt-2 text-base text-muted-foreground">
                 Бүх хурлын бичлэг болон бичвэр
               </p>
             </div>
-            <div className="flex items-center gap-2">
-              <Link href="/upload" className={buttonVariants({ variant: "outline", className: "gap-2 rounded-full" })}>
+            <div className="flex items-center gap-3">
+              <Link href="/upload" className={buttonVariants({ variant: "outline", className: "gap-2 rounded-full h-11 px-6" })}>
                 <Upload className="h-4 w-4" />
                 <span className="hidden sm:inline">Аудио оруулах</span>
               </Link>
-              <Button onClick={handleNewMeeting} className="gap-2 rounded-full bg-foreground text-background hover:bg-foreground/90">
+              <Button onClick={handleNewMeeting} className="gap-2 rounded-full bg-foreground text-background shadow-lg shadow-foreground/10 hover:opacity-90 h-11 px-6">
                 <Mic className="h-4 w-4" />
                 Шинэ хурал
               </Button>
@@ -252,21 +252,21 @@ function MeetingsContent() {
 
           {/* Search and Filters */}
           {!loading && meetings.length > 0 && (
-            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   placeholder="Хурал хайх..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="rounded-full pl-9"
+                  className="h-11 rounded-full border-border/60 pl-10 shadow-sm"
                 />
               </div>
               <div className="flex items-center gap-2">
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="h-10 rounded-full border border-input bg-background px-4 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                  className="h-11 rounded-full border border-border/60 bg-background px-4 text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
                 >
                   <option value="all">Бүх төлөв</option>
                   <option value="completed">Дууссан</option>
@@ -277,7 +277,7 @@ function MeetingsContent() {
                 <select
                   value={sortField}
                   onChange={(e) => setSortField(e.target.value as SortField)}
-                  className="h-10 rounded-full border border-input bg-background px-4 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                  className="h-11 rounded-full border border-border/60 bg-background px-4 text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
                 >
                   <option value="date">Огноогоор</option>
                   <option value="title">Гарчигаар</option>
@@ -288,7 +288,7 @@ function MeetingsContent() {
                   size="icon"
                   onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
                   title={sortOrder === "asc" ? "Өсөх" : "Буурах"}
-                  className="rounded-full"
+                  className="h-11 w-11 rounded-full border-border/60 shadow-sm"
                 >
                   {sortOrder === "asc" ? <SortAsc className="h-4 w-4" /> : <SortDesc className="h-4 w-4" />}
                 </Button>
@@ -297,27 +297,27 @@ function MeetingsContent() {
                   size="sm"
                   onClick={() => setShowArchived(!showArchived)}
                   title={showArchived ? "Идэвхтэй хурлууд руу буцах" : "Архивласан хурлуудыг харуулах"}
-                  className="rounded-full gap-1.5"
+                  className="rounded-full gap-1.5 h-11 px-4"
                 >
                   {showArchived ? (
                     <>
                       <ArchiveRestore className="h-4 w-4" />
-                      <span className="text-xs">Идэвхтэй</span>
+                      <span className="text-sm">Идэвхтэй</span>
                     </>
                   ) : (
                     <>
                       <Archive className="h-4 w-4" />
-                      <span className="text-xs">Архив</span>
+                      <span className="text-sm">Архив</span>
                     </>
                   )}
                 </Button>
-                <div className="flex items-center rounded-full border border-input">
+                <div className="flex items-center rounded-full border border-border/60 shadow-sm">
                   <Button
                     variant={viewMode === "grid" ? "default" : "ghost"}
                     size="icon"
                     onClick={() => setViewMode("grid")}
                     title="Grid view"
-                    className="h-9 w-9 rounded-full"
+                    className="h-10 w-10 rounded-full"
                   >
                     <LayoutGrid className="h-4 w-4" />
                   </Button>
@@ -326,7 +326,7 @@ function MeetingsContent() {
                     size="icon"
                     onClick={() => setViewMode("list")}
                     title="List view"
-                    className="h-9 w-9 rounded-full"
+                    className="h-10 w-10 rounded-full"
                   >
                     <List className="h-4 w-4" />
                   </Button>
