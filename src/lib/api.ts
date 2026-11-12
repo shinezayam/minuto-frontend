@@ -260,6 +260,45 @@ export const api = {
 
   exportDocxUrl: (id: string) => withToken(`${API_BASE}/api/meetings/${id}/export.docx`),
 
+  /** Бүх template жагсаах */
+  listTemplates: () =>
+    request<Array<{
+      id: string;
+      name: string;
+      description: string | null;
+      icon: string;
+      sections: string[];
+      custom_prompt: string | null;
+      is_default: boolean;
+      owner_id: string | null;
+    }>>("/api/templates"),
+
+  /** Шинэ template үүсгэх */
+  createTemplate: (data: {
+    name: string;
+    description?: string;
+    icon?: string;
+    sections?: string[];
+    custom_prompt?: string;
+  }) =>
+    request<{
+      id: string;
+      name: string;
+      description: string | null;
+      icon: string;
+      sections: string[];
+      custom_prompt: string | null;
+      is_default: boolean;
+      owner_id: string | null;
+    }>("/api/templates", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
+  /** Template устгах */
+  deleteTemplate: (id: string) =>
+    request<void>(`/api/templates/${id}`, { method: "DELETE" }),
+
   /** DOCX-ийг татна. Хурлын бичиг үүсээгүй бол серверийн JSON-ийг харуулахын оронд алдаа шиднэ. */
   downloadDocx: async (id: string) => {
     const res = await fetch(`${API_BASE}/api/meetings/${id}/export.docx`, { headers: authHeaders() });
