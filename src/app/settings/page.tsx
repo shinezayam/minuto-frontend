@@ -117,7 +117,7 @@ export default function SettingsPage() {
                 <Button
                   onClick={handleSaveProfile}
                   disabled={saving || !name.trim()}
-                  className="gap-2"
+                  className="gap-2 rounded-full bg-foreground text-background shadow-lg shadow-foreground/10 hover:opacity-90 h-11 px-6 text-sm font-semibold"
                 >
                   {saved ? (
                     <>
@@ -215,7 +215,7 @@ export default function SettingsPage() {
                   </div>
                 </div>
 
-                <Button onClick={handleSavePreferences} className="gap-2">
+                <Button onClick={handleSavePreferences} className="gap-2 rounded-full bg-foreground text-background shadow-lg shadow-foreground/10 hover:opacity-90 h-11 px-6 text-sm font-semibold">
                   {saved ? (
                     <>
                       <Check className="h-4 w-4" />

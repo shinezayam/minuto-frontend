@@ -216,10 +216,10 @@ export default function WorkspacesPage() {
                   />
                 </div>
                 <div className="flex gap-2">
-                  <Button onClick={handleCreate} disabled={!newName.trim()}>
+                  <Button onClick={handleCreate} disabled={!newName.trim()} className="rounded-full bg-foreground text-background shadow-lg shadow-foreground/10 hover:opacity-90 h-11 px-6 text-sm font-semibold">
                     Үүсгэх
                   </Button>
-                  <Button variant="outline" onClick={() => setShowCreate(false)}>
+                  <Button variant="outline" onClick={() => setShowCreate(false)} className="rounded-full h-11 px-6 text-sm font-semibold">
                     Цуцлах
                   </Button>
                 </div>
@@ -319,10 +319,10 @@ export default function WorkspacesPage() {
                             <option value="editor">Засварлагч</option>
                             <option value="admin">Админ</option>
                           </select>
-                          <Button onClick={handleInvite} disabled={!inviteEmail.trim()}>
+                          <Button onClick={handleInvite} disabled={!inviteEmail.trim()} className="rounded-full bg-foreground text-background shadow-lg shadow-foreground/10 hover:opacity-90 h-10 px-5 text-sm font-semibold">
                             Илгээх
                           </Button>
-                          <Button variant="outline" onClick={() => setShowInvite(false)}>
+                          <Button variant="outline" onClick={() => setShowInvite(false)} className="rounded-full h-10 px-5 text-sm font-semibold">
                             Цуцлах
                           </Button>
                         </div>
@@ -388,10 +388,10 @@ export default function WorkspacesPage() {
                             ))}
                           </div>
                           <div className="flex gap-2">
-                            <Button onClick={handleCreateProject} disabled={!projectName.trim()}>
+                            <Button onClick={handleCreateProject} disabled={!projectName.trim()} className="rounded-full bg-foreground text-background shadow-lg shadow-foreground/10 hover:opacity-90 h-10 px-5 text-sm font-semibold">
                               Үүсгэх
                             </Button>
-                            <Button variant="outline" onClick={() => setShowCreateProject(false)}>
+                            <Button variant="outline" onClick={() => setShowCreateProject(false)} className="rounded-full h-10 px-5 text-sm font-semibold">
                               Цуцлах
                             </Button>
                           </div>

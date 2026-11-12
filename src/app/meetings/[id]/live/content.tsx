@@ -328,16 +328,16 @@ export default function LiveMeetingContent() {
               )}
 
               <Button
-                className="mt-6 w-full gap-2"
+                className="mt-6 w-full gap-2 rounded-full bg-foreground text-background shadow-lg shadow-foreground/10 hover:opacity-90 h-12 text-base font-semibold"
                 disabled={!consent || starting}
                 onClick={handleStart}
               >
                 {starting ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader2 className="h-5 w-5 animate-spin" />
                 ) : source === "meeting" ? (
-                  <MonitorSpeaker className="h-4 w-4" />
+                  <MonitorSpeaker className="h-5 w-5" />
                 ) : (
-                  <Mic className="h-4 w-4" />
+                  <Mic className="h-5 w-5" />
                 )}
                 Бичлэг эхлүүлэх
               </Button>
@@ -541,7 +541,7 @@ export default function LiveMeetingContent() {
                   Түр зогсоох
                 </Button>
               ) : (
-                <Button size="lg" className="gap-2" onClick={handleResume}>
+                <Button size="lg" className="gap-2 rounded-full bg-foreground text-background shadow-lg shadow-foreground/10 hover:opacity-90" onClick={handleResume}>
                   <Play className="h-5 w-5" />
                   Үргэлжлүүлэх
                 </Button>

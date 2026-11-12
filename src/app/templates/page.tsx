@@ -195,10 +195,10 @@ export default function TemplatesPage() {
                   />
                 </div>
                 <div className="flex gap-2">
-                  <Button onClick={handleCreate} disabled={!newName.trim()}>
+                  <Button onClick={handleCreate} disabled={!newName.trim()} className="rounded-full bg-foreground text-background shadow-lg shadow-foreground/10 hover:opacity-90 h-11 px-6 text-sm font-semibold">
                     Үүсгэх
                   </Button>
-                  <Button variant="outline" onClick={() => setShowCreate(false)}>
+                  <Button variant="outline" onClick={() => setShowCreate(false)} className="rounded-full h-11 px-6 text-sm font-semibold">
                     Цуцлах
                   </Button>
                 </div>

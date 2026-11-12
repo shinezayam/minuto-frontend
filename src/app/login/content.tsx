@@ -120,7 +120,7 @@ export default function LoginContent() {
                 </div>
               )}
 
-              <Button type="submit" className="h-10 w-full" disabled={busy}>
+              <Button type="submit" className="h-12 w-full rounded-full bg-foreground text-background shadow-lg shadow-foreground/10 hover:opacity-90 text-base font-semibold" disabled={busy}>
                 {busy && <Loader2 className="h-4 w-4 animate-spin" />}
                 {isLogin ? "Нэвтрэх" : "Бүртгүүлэх"}
               </Button>

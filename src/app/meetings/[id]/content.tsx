@@ -475,10 +475,10 @@ export default function MeetingDetailContent() {
                   className="text-3xl font-bold"
                   autoFocus
                 />
-                <Button size="sm" onClick={saveTitle}>
+                <Button size="sm" onClick={saveTitle} className="rounded-full bg-foreground text-background shadow-lg shadow-foreground/10 hover:opacity-90">
                   <Check className="h-4 w-4" />
                 </Button>
-                <Button size="sm" variant="ghost" onClick={() => setEditingTitle(false)}>
+                <Button size="sm" variant="ghost" onClick={() => setEditingTitle(false)} className="rounded-full">
                   <X className="h-4 w-4" />
                 </Button>
               </div>
@@ -569,13 +569,13 @@ export default function MeetingDetailContent() {
                 Дахин боловсруулбал AI яригчдыг эдгээр нэрээр таних оролдлого хийнэ (ярианаас нь тодорхой бол).
               </p>
               <div className="flex flex-wrap gap-2">
-                <Button size="sm" variant="outline" onClick={() => setEditingPeople(false)} disabled={savingPeople}>
+                <Button size="sm" variant="outline" onClick={() => setEditingPeople(false)} disabled={savingPeople} className="rounded-full">
                   Цуцлах
                 </Button>
-                <Button size="sm" variant="outline" onClick={() => savePeople(false)} disabled={savingPeople}>
+                <Button size="sm" variant="outline" onClick={() => savePeople(false)} disabled={savingPeople} className="rounded-full">
                   Хадгалах
                 </Button>
-                <Button size="sm" onClick={() => savePeople(true)} disabled={savingPeople} className="gap-1.5">
+                <Button size="sm" onClick={() => savePeople(true)} disabled={savingPeople} className="gap-1.5 rounded-full bg-foreground text-background shadow-lg shadow-foreground/10 hover:opacity-90">
                   {savingPeople ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RotateCcw className="h-3.5 w-3.5" />}
                   Хадгалаад дахин боловсруулах
                 </Button>
@@ -641,7 +641,7 @@ export default function MeetingDetailContent() {
                         size="sm"
                         onClick={handleRegenerateSummary}
                         disabled={regeneratingSummary || isProcessing}
-                        className="gap-1.5"
+                        className="gap-1.5 rounded-full"
                       >
                         {regeneratingSummary ? (
                           <Loader2 className="h-4 w-4 animate-spin" />
@@ -652,11 +652,11 @@ export default function MeetingDetailContent() {
                       </Button>
                       {!summaryEditMode && (
                         <>
-                          <Button variant="outline" size="sm" onClick={startEditSummary} disabled={isProcessing}>
+                          <Button variant="outline" size="sm" onClick={startEditSummary} disabled={isProcessing} className="rounded-full">
                             <Pencil className="h-4 w-4 mr-1" />
                             Засварлах
                           </Button>
-                          <Button variant="outline" size="sm" onClick={copySummary}>
+                          <Button variant="outline" size="sm" onClick={copySummary} className="rounded-full">
                             <CheckCircle className="h-4 w-4 mr-1" />
                             Хуулах
                           </Button>
@@ -674,11 +674,11 @@ export default function MeetingDetailContent() {
                           className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                         />
                         <div className="flex gap-2">
-                          <Button size="sm" onClick={saveSummary}>
+                          <Button size="sm" onClick={saveSummary} className="rounded-full bg-foreground text-background shadow-lg shadow-foreground/10 hover:opacity-90">
                             <Check className="h-4 w-4 mr-1" />
                             Хадгалах
                           </Button>
-                          <Button size="sm" variant="outline" onClick={cancelEditSummary}>
+                          <Button size="sm" variant="outline" onClick={cancelEditSummary} className="rounded-full">
                             <X className="h-4 w-4 mr-1" />
                             Цуцлах
                           </Button>
@@ -912,6 +912,7 @@ export default function MeetingDetailContent() {
                         size="sm"
                         onClick={handleGenerateTopics}
                         disabled={isProcessing || generatingTopics}
+                        className="rounded-full"
                       >
                         {generatingTopics ? (
                           <Loader2 className="h-4 w-4 mr-1 animate-spin" />
@@ -925,6 +926,7 @@ export default function MeetingDetailContent() {
                         size="sm"
                         onClick={() => setTranscriptEditMode(!transcriptEditMode)}
                         disabled={isProcessing}
+                        className="rounded-full"
                       >
                         <Pencil className="h-4 w-4 mr-1" />
                         {transcriptEditMode ? "Засварлах горим" : "Засварлах"}
@@ -932,7 +934,7 @@ export default function MeetingDetailContent() {
                     </>
                   )}
                   {transcript.length > 0 && !replaceOpen && !transcriptEditMode && (
-                    <Button variant="outline" size="sm" onClick={() => setReplaceOpen(true)} disabled={isProcessing}>
+                    <Button variant="outline" size="sm" onClick={() => setReplaceOpen(true)} disabled={isProcessing} className="rounded-full">
                       <PenLine />
                       Үг засах
                     </Button>
@@ -1055,11 +1057,11 @@ export default function MeetingDetailContent() {
                                 />
                               </div>
                               <div className="flex gap-2">
-                                <Button size="sm" onClick={saveSegment}>
+                                <Button size="sm" onClick={saveSegment} className="rounded-full bg-foreground text-background shadow-lg shadow-foreground/10 hover:opacity-90">
                                   <Check className="h-4 w-4 mr-1" />
                                   Хадгалах
                                 </Button>
-                                <Button size="sm" variant="outline" onClick={cancelEditSegment}>
+                                <Button size="sm" variant="outline" onClick={cancelEditSegment} className="rounded-full">
                                   <X className="h-4 w-4 mr-1" />
                                   Цуцлах
                                 </Button>
